@@ -6,7 +6,7 @@ function showModal(title, msg, type = "info") {
 }
 function closeModal() { document.getElementById('custom-modal').style.display = 'none'; }
 
-// بناء قائمة الأرقام (الادعاء) برمجياً، A تحت K
+// قائمة الأرقام: A في النهاية
 const selectOrder = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
 function buildClaimGrid() {
     const grid = document.getElementById('claim-grid'); grid.innerHTML = '';
@@ -21,7 +21,6 @@ buildClaimGrid();
 
 function closeClaimModal() { document.getElementById('claim-modal').style.display = 'none'; }
 
-// الأكشن السريع (1 ثانية فقط)
 function showBigAction(text, color) {
     const overlay = document.getElementById('action-overlay'); const textEl = document.getElementById('action-text');
     textEl.innerText = text; textEl.style.textShadow = `0 10px 30px rgba(0,0,0,0.9), 0 0 50px ${color}`;
@@ -48,7 +47,6 @@ function playSound(type) {
 const rankOrder = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
 function sortMyHand() { myHand.sort((a,b) => rankOrder.indexOf(a) - rankOrder.indexOf(b)); }
 
-// توليد كود غرفة قصير
 function generateShortCode() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'; let code = '';
     for(let i=0; i<5; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -63,7 +61,6 @@ let hostHandBackup = {}; let isHost = false, myHand = [], selected = [], myIndex
 
 function getPlayerName() { return document.getElementById('player-name').value.trim() || `لاعب ${Math.floor(Math.random() * 100)}`; }
 
-// اللوبي والطرد
 function updateLobbyUI() {
     document.getElementById('peer-count').innerText = lobbyPlayers.length;
     const listEl = document.getElementById('lobby-players-list'); listEl.innerHTML = '';
@@ -189,7 +186,7 @@ function passTurn() {
     if(gameState.currentPlayer !== myIndex) return;
     if(gameState.lastPlayer === -1 || gameState.pot.length === 0) return showModal("تنبيه", "الطاولة فاضية، ما تقدر تسوي Pass!", "error");
     let nextPlayerName = gameState.players[(myIndex + 1) % gameState.players.length].name;
-    gameState.actionLog = `💨 ${myName} سوّى PASS ➡️ الدور عند ${nextPlayerName}`;
+    gameState.actionLog = `💨 ${myName} سوّى PASS ➡️ الدور عند ${nextPlayerName} يختار رقم جديد!`;
     gameState.players[myIndex].lastAction = { text: "Pass 💨", type: "pass" };
     gameState.currentClaim = ""; gameState.lastPlayer = -1; clearNextPlayerAction();
     gameState.currentPlayer = (gameState.currentPlayer + 1) % gameState.players.length; selected = []; closeClaimModal();
@@ -243,8 +240,13 @@ function render() {
     });
 
     const status = document.getElementById('status-bar');
-    if(gameState.currentPlayer === myIndex) { if(status.innerText !== "🔥 دورك! 🔥") playSound('turn'); status.innerText = "🔥 دورك! 🔥"; status.style.color = "#00ff00"; } 
-    else { status.innerText = `⏳ بانتظار ${gameState.players[gameState.currentPlayer]?.name} ⏳`; status.style.color = "white"; }
+    if(gameState.currentPlayer === myIndex) { 
+        let statusText = gameState.currentClaim ? "🔥 دورك! نزل الورق أو سوّ Pass 🔥" : "🔥 دورك! ابدأ لفة جديدة واختر بطاقة 🔥";
+        if(status.innerText !== statusText) playSound('turn'); 
+        status.innerText = statusText; status.style.color = "#00ff00"; 
+    } else { 
+        status.innerText = `⏳ بانتظار ${gameState.players[gameState.currentPlayer]?.name} ⏳`; status.style.color = "white"; 
+    }
 
     const claimHolo = document.getElementById('claim-hologram');
     if(gameState.currentClaim) { document.getElementById('claim-target-number').innerText = gameState.currentClaim; claimHolo.style.display = "block"; } else { claimHolo.style.display = "none"; }
