@@ -19,7 +19,7 @@
         button { padding: 10px 20px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; }
         .btn-gold { background: var(--gold); color: black; }
         .btn-red { background: var(--accent); color: white; }
-        input { padding: 10px; border-radius: 5px; border: none; width: 150px; text-align: center; }
+        input { padding: 10px; border-radius: 5px; border: none; width: 150px; text-align: center; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -33,7 +33,7 @@
             <button class="btn-gold" onclick="joinRoom()">دخول</button>
         </div>
         <div class="setup-box" id="waiting-area" style="display:none;">
-            <h2>كود الغرفة: <span id="room-code" style="color:var(--gold); user-select: all;">...</span></h2>
+            <h2>كود الغرفة: <br><span id="room-code" style="color:var(--gold); user-select: all; font-size: 1.5rem;">...</span></h2>
             <p>شارك الكود مع أصحابك</p>
             <p>المتصلون الآن: <span id="peer-count">1</span></p>
             <button class="btn-gold" id="start-game-btn" onclick="broadcastStart()" style="display:none;">ابدأ اللعب!</button>
@@ -50,7 +50,7 @@
     <div class="hand" id="my-hand"></div>
 
     <div class="controls">
-        <select id="claim-val" style="padding:10px; border-radius:5px;">
+        <select id="claim-val" style="padding:10px; border-radius:5px; font-weight: bold;">
             <option value="A">A</option><option value="2">2</option><option value="3">3</option>
             <option value="4">4</option><option value="5">5</option><option value="J">J</option>
             <option value="Q">Q</option><option value="K">K</option>
@@ -67,10 +67,12 @@
     let selected = [];
     let myIndex = 0;
 
-    // --- الاتصال ---
+    // --- الاتصال المعدّل ---
     function startHost() {
         isHost = true;
+        document.getElementById('initial-setup').innerHTML = "<h2>جاري إنشاء الغرفة... ⏳</h2>";
         peer = new Peer();
+        
         peer.on('open', id => {
             myId = id;
             document.getElementById('initial-setup').style.display = 'none';
@@ -78,22 +80,38 @@
             document.getElementById('room-code').innerText = id;
             document.getElementById('start-game-btn').style.display = 'inline-block';
         });
+
         peer.on('connection', c => {
-            connections.push(c);
-            document.getElementById('peer-count').innerText = connections.length + 1;
-            setupConn(c);
+            // التعديل الأهم: المضيف لن يسجل اللاعب إلا إذا فتح الخط تماماً
+            c.on('open', () => {
+                connections.push(c);
+                document.getElementById('peer-count').innerText = connections.length + 1;
+                setupConn(c);
+            });
         });
     }
 
     function joinRoom() {
         const hostId = document.getElementById('join-id').value;
         if(!hostId) return alert("أدخل الكود!");
+        
+        document.getElementById('initial-setup').innerHTML = "<h2>جاري الاتصال بالمضيف... ⏳</h2>";
+        
         peer = new Peer();
         peer.on('open', id => {
             myId = id;
             conn = peer.connect(hostId);
-            setupConn(conn);
-            document.getElementById('initial-setup').innerHTML = "<h2>تم الاتصال! انتظر المضيف يبدأ...</h2>";
+            
+            // التعديل الأهم: اللاعب لن يرى رسالة "تم الاتصال" إلا إذا فتح الخط تماماً
+            conn.on('open', () => {
+                setupConn(conn);
+                document.getElementById('initial-setup').innerHTML = "<h2 style='color:var(--gold)'>تم الاتصال بنجاح! ✅<br><br><span style='font-size:1rem; color:white'>انتظر المضيف يضغط ابدأ...</span></h2>";
+            });
+            
+            conn.on('error', err => {
+                alert("فشل الاتصال، تأكد من الكود!");
+                location.reload();
+            });
         });
     }
 
@@ -108,7 +126,7 @@
             }
             if(data.type === 'UPDATE') {
                 gameState = data.state;
-                if(isHost) { // المضيف يعيد إرسال التحديث للجميع
+                if(isHost) {
                     connections.forEach(cli => cli.send({ type: 'UPDATE', state: gameState }));
                 }
                 render();
@@ -162,12 +180,9 @@
     function callBluff() {
         if(gameState.pot.length === 0 || gameState.lastPlayer === myIndex) return;
         
-        // التحقق من الكذب (تبسيط: آخر ورقة في الكومة)
         let isLying = gameState.pot[gameState.pot.length - 1] !== gameState.currentClaim;
-        
         alert(isLying ? "قفطته! هو كذاب" : "ظلمته! هو صادق");
         
-        // المضيف عادة هو اللي يحسب النتيجة، هنا للتبسيط بنصفر الكومة
         gameState.pot = [];
         gameState.currentClaim = "";
         syncData();
