@@ -3,11 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>كذاب Pro - v8.2 النهائي</title>
+    <title>كذاب Pro - الأسطورة v9.0</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+    <div id="action-overlay" class="action-overlay" style="display:none;">
+        <h1 id="action-text" class="action-text"></h1>
+    </div>
 
     <div id="custom-modal" class="overlay" style="display:none; z-index: 3000;">
         <div class="modal-box">
@@ -17,19 +21,20 @@
         </div>
     </div>
 
-    <div id="win-modal" class="overlay" style="display:none; z-index: 4000; background: rgba(0,0,0,0.98);">
-        <div class="modal-box" style="border-color: var(--gold); box-shadow: 0 0 50px var(--gold);">
-            <div class="modal-title" style="color: var(--gold); font-size: 2rem;">🏆 فــــائــــز 🏆</div>
+    <div id="win-modal" class="overlay" style="display:none; z-index: 4000;">
+        <div class="modal-box win-box">
+            <div class="modal-title" style="color: var(--gold-primary); font-size: 2.5rem;">🏆 فــــائــــز 🏆</div>
             <div id="win-body" class="modal-body" style="font-size: 1.5rem; color: white; font-weight: bold;">اللاعب فاز باللعبة!</div>
-            <button class="btn-gold" style="width: 100%;" onclick="location.reload()">لعب من جديد</button>
+            <button id="btn-play-again" class="btn-gold" style="width: 100%; display:none;" onclick="playAgain()">لعب من جديد بنفس الغرفة 🔄</button>
+            <p id="wait-host-msg" style="color: #aaa; margin-top: 15px; display:none;">بانتظار المضيف لبدء جولة جديدة...</p>
         </div>
     </div>
 
     <div id="lobby" class="overlay">
         <div class="setup-box" id="initial-setup">
             <button class="btn-help" onclick="showModal('القوانين ❓', 'تخلص من أوراقك لتفوز!\nاللي ينزّل يختار رقم، واللي بعده يقدر يكذبّه أو يسوي Pass.\nإذا جاك Pass لازم تختار رقم وتلعب، ما تقدر تسوي Pass.\nالورق يترتب تصاعدي تلقائياً 🃏', 'info')">؟</button>
-            <h1 style="color: var(--gold); margin-bottom: 5px;">كذاب Pro 👑</h1>
-            <p style="color:#aaa; font-size: 0.9rem; margin-top: 0;">v8.2 (خالية من الأخطاء)</p>
+            <h1 style="color: var(--gold-primary); margin-bottom: 5px;">كذاب Pro 👑</h1>
+            <p style="color:#aaa; font-size: 0.9rem; margin-top: 0;">v9.0 (النسخة السينمائية)</p>
             <input type="text" id="player-name" placeholder="اكتب اسمك هنا" maxlength="12">
             <button class="btn-gold" style="width: 100%; margin-bottom: 10px;" onclick="startHost()">إنشاء طاولة (Host)</button>
             <div style="display:flex; gap:10px; width: 100%;">
@@ -37,42 +42,46 @@
                 <button class="btn-gray" style="width: 40%;" onclick="joinRoom()">دخول</button>
             </div>
         </div>
+
         <div class="setup-box" id="waiting-area" style="display:none;">
-            <h2 style="color: white;">كود الطاولة:</h2>
-            <div style="background: black; padding: 15px; border-radius: 10px; color: var(--gold); font-size: 1.8rem; user-select: all; margin-bottom: 15px; letter-spacing: 2px;" id="room-code">...</div>
-            <p style="font-size: 1.2rem;">عدد اللاعبين الآن: <strong id="peer-count" style="color:var(--gold)">1</strong> / 10</p>
-            <button class="btn-gold" id="start-game-btn" onclick="this.disabled=true; broadcastStart()" style="display:none; width: 100%; font-size: 1.2rem;">توزيع الورق 🃏</button>
+            <h2 style="color: white; margin-bottom: 10px;">كود الطاولة:</h2>
+            <div id="room-code" class="room-code-display">...</div>
+            <p style="font-size: 1.2rem; margin-bottom: 10px;">عدد اللاعبين: <strong id="peer-count" style="color:var(--gold-primary)">1</strong></p>
+            
+            <div class="lobby-players-list" id="lobby-players-list">
+                </div>
+
+            <button class="btn-gold" id="start-game-btn" onclick="this.disabled=true; broadcastStart()" style="display:none; width: 100%; font-size: 1.2rem; margin-top: 15px;">توزيع الورق 🃏</button>
         </div>
     </div>
 
     <div id="action-log">مرحباً بكم في لعبة كذاب!</div>
     <div id="status-bar">بانتظار البداية...</div>
 
-    <div class="table-area">
+    <div class="table-area" id="table-area" style="display: none;">
         <div class="poker-table">
-            <div id="pot-container" style="position: relative; width: 60px; height: 80px;"></div>
+            <div id="claim-hologram" class="claim-hologram" style="display: none;">
+                المطلوب: <span id="claim-target-number">K</span>
+            </div>
+            <div id="pot-container" class="pot-container"></div>
+            <div id="pot-count-badge" class="pot-count-badge">الكومة: 0 بطاقة</div>
         </div>
         <div id="avatars-container"></div>
     </div>
 
-    <div id="middle-info">
-        <div id="claim-msg">المطلوب: K</div>
-        <div id="pot-count-badge">الكومة: 0 بطاقة</div>
-    </div>
-
-    <div class="hand-container">
+    <div class="hand-container" id="hand-container" style="display: none;">
         <div class="hand" id="my-hand"></div>
         <div class="controls">
             <select id="claim-val" style="display: none;">
-                <option value="" disabled selected>ادّعي أن الورق...</option>
+                <option value="" disabled selected>-- اختر الرقم --</option>
                 <option value="A">A</option><option value="2">2</option><option value="3">3</option>
                 <option value="4">4</option><option value="5">5</option><option value="6">6</option>
                 <option value="7">7</option><option value="8">8</option><option value="9">9</option>
                 <option value="10">10</option><option value="J">J</option><option value="Q">Q</option><option value="K">K</option>
             </select>
-            <button class="btn-gold" onclick="playCards()">تنزيل الورق</button>
-            <button class="btn-gray" id="btn-pass" onclick="passTurn()">Pass</button>
-            <button class="btn-red" id="btn-bluff" onclick="callBluff()">كــــذاب!</button>
+            <button class="btn-gold" id="btn-play" onclick="playCards()">تنزيل الورق</button>
+            <button class="btn-gray" id="btn-pass" onclick="passTurn()">Pass 💨</button>
+            <button class="btn-red" id="btn-bluff" onclick="callBluff()">كــــذاب! 🚨</button>
         </div>
     </div>
 
