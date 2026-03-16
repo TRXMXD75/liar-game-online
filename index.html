@@ -3,372 +3,372 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>كذاب Pro - الطاولة الاحترافية v5.0</title>
+    <title>كذاب Pro - النسخة الخارقة v7.0</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
-        :root { --poker-green: #1a4a1a; --gold: #ffd700; --accent: #ff4444; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: radial-gradient(circle, #2c5364, #0f2027); color: white; margin: 0; min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+        :root { 
+            --table-green: #143623; --table-dark: #0a1c12; --wood: #4a2f1d;
+            --gold: #f4c430; --accent: #ff3b3b; --success: #28a745;
+        }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: radial-gradient(circle at center, #1b2822, #080c0a); color: white; margin: 0; min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
         
-        #lobby { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; display: flex; align-items: center; justify-content: center; flex-direction: column; }
-        .setup-box { background: var(--poker-green); padding: 30px; border-radius: 20px; border: 3px solid var(--gold); text-align: center; max-width: 90%; width: 400px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
+        /* شاشات الانتظار والنوافذ (Modals) */
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+        .setup-box { background: var(--table-green); padding: 30px; border-radius: 20px; border: 3px solid var(--gold); text-align: center; max-width: 90%; width: 400px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); position: relative; }
         
-        /* الطاولة واللاعبين */
-        .table-area { position: relative; width: 90vw; max-width: 600px; height: 35vh; margin: 30px auto; display: flex; align-items: center; justify-content: center; }
-        .poker-table { width: 100%; height: 100%; background: radial-gradient(#2d5a27, #132a13); border: 12px solid #3d2b1f; border-radius: 200px; box-shadow: inset 0 0 40px #000, 0 15px 30px rgba(0,0,0,0.6); position: relative; display: flex; align-items: center; justify-content: center; }
+        .modal-box { background: #1a1a1a; padding: 25px; border-radius: 15px; border: 2px solid #555; text-align: center; max-width: 90%; width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.9); animation: popIn 0.3s ease-out; }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-title { font-size: 1.5rem; font-weight: bold; margin-bottom: 15px; }
+        .modal-body { font-size: 1.1rem; margin-bottom: 20px; color: #ccc; line-height: 1.5; }
         
-        .avatar { position: absolute; background: rgba(0,0,0,0.8); border: 2px solid #555; border-radius: 15px; padding: 5px 15px; text-align: center; transform: translate(-50%, -50%); transition: 0.3s; z-index: 10; min-width: 80px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        .avatar.active { border-color: var(--gold); box-shadow: 0 0 20px var(--gold); transform: translate(-50%, -60%) scale(1.1); }
-        .avatar .name { font-weight: bold; color: var(--gold); font-size: 0.9rem; margin-bottom: 5px; }
-        .avatar .cards { background: white; color: black; border-radius: 50px; font-weight: bold; font-size: 0.8rem; padding: 2px 5px; }
+        /* أزرار دائمة */
+        .btn-help { position: absolute; top: 15px; left: 15px; background: var(--gold); color: black; border-radius: 50%; width: 35px; height: 35px; font-weight: bold; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; }
+        
+        /* شريط الحالة والطاولة */
+        #status-bar { width: 100%; text-align: center; padding: 15px; color: var(--gold); font-size: 1.5rem; background: rgba(0,0,0,0.6); font-weight: bold; border-bottom: 2px solid var(--gold); z-index: 100; text-shadow: 0 2px 5px black; }
+        .table-area { flex: 1; position: relative; width: 95vw; max-width: 800px; margin: 20px auto; display: flex; align-items: center; justify-content: center; }
+        .poker-table { width: 90%; height: 85%; background: radial-gradient(var(--table-green), var(--table-dark)); border: 20px solid var(--wood); border-radius: 200px; box-shadow: inset 0 0 50px rgba(0,0,0,0.9), 0 20px 40px rgba(0,0,0,0.7); position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        
+        #claim-msg { position: absolute; top: 10%; background: rgba(0,0,0,0.8); border: 2px solid var(--gold); color: var(--gold); padding: 5px 20px; border-radius: 20px; font-weight: bold; font-size: 1.2rem; display: none; }
+        #pot-count-badge { position: absolute; bottom: 15%; background: rgba(0,0,0,0.6); color: white; padding: 5px 15px; border-radius: 15px; font-size: 1.1rem; border: 1px solid #555; }
+        
+        /* اللاعبين */
+        .avatar { position: absolute; background: rgba(0,0,0,0.85); border: 2px solid #555; border-radius: 20px; padding: 5px 10px; display: flex; align-items: center; gap: 10px; transform: translate(-50%, -50%); transition: 0.3s; z-index: 10; box-shadow: 0 5px 15px rgba(0,0,0,0.7); white-space: nowrap; }
+        .avatar.active { border-color: #00ff00; box-shadow: 0 0 25px #00ff00; transform: translate(-50%, -60%) scale(1.15); }
+        .avatar .name { font-weight: bold; color: white; font-size: 1rem; }
+        .avatar .cards { background: var(--accent); color: white; border-radius: 15px; font-weight: bold; font-size: 0.9rem; padding: 3px 8px; box-shadow: inset 0 -2px 5px rgba(0,0,0,0.3); }
         
         /* الورق واليد */
-        .hand { display: flex; flex-wrap: wrap; justify-content: center; padding: 15px; background: rgba(0,0,0,0.3); gap: 8px; flex: 1; align-items: flex-start; align-content: flex-start; }
-        .card { width: 55px; height: 80px; background: white; border-radius: 8px; color: black; transition: 0.2s; border: 2px solid #999; display: flex; flex-direction: column; justify-content: space-between; padding: 5px; font-weight: bold; cursor: pointer; user-select: none; box-shadow: 2px 2px 5px rgba(0,0,0,0.4); }
+        .hand-container { height: 35vh; width: 100%; background: rgba(0,0,0,0.4); border-top: 3px solid var(--wood); display: flex; flex-direction: column; }
+        .hand { display: flex; flex-wrap: wrap; justify-content: center; padding: 15px; gap: 8px; flex: 1; align-content: flex-start; overflow-y: auto; }
+        .card { width: 55px; height: 80px; background: white; border-radius: 8px; color: black; transition: 0.2s; border: 2px solid #999; display: flex; flex-direction: column; justify-content: space-between; padding: 5px; font-weight: bold; cursor: pointer; user-select: none; box-shadow: 2px 2px 8px rgba(0,0,0,0.5); font-size: 1.1rem; }
         .card:hover { transform: translateY(-10px); }
-        .card.selected { transform: translateY(-20px); border: 3px solid var(--gold); box-shadow: 0 0 15px var(--gold); background: #fffde7; }
-        .pot-card { position: absolute; width: 45px; height: 65px; background: #333; border: 1px solid #666; border-radius: 5px; transform: rotate(var(--r)); box-shadow: 2px 2px 10px rgba(0,0,0,0.5); }
+        .card.selected { transform: translateY(-20px); border: 3px solid var(--gold); box-shadow: 0 0 20px var(--gold); background: #fffae6; }
+        .pot-card { position: absolute; width: 45px; height: 65px; background: #222; border: 1px solid #666; border-radius: 5px; transform: rotate(var(--r)); box-shadow: 2px 2px 10px rgba(0,0,0,0.5); }
         
         /* التحكم */
-        .controls { padding: 15px; background: #0b171c; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; border-top: 2px solid var(--gold); }
-        button { padding: 12px 20px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 1rem; }
+        .controls { padding: 15px; background: #0b171c; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; border-top: 1px solid #333; }
+        button { padding: 12px 25px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 1.1rem; }
         button:active { transform: scale(0.95); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
         .btn-gold { background: var(--gold); color: black; }
         .btn-red { background: var(--accent); color: white; }
-        .btn-gray { background: #666; color: white; }
+        .btn-gray { background: #555; color: white; }
+        select { padding: 12px; border-radius: 10px; font-weight: bold; font-size: 1.1rem; outline: none; border: 2px solid var(--gold); background: white; cursor: pointer; }
         input { padding: 12px; border-radius: 8px; border: none; width: 85%; text-align: center; font-weight: bold; font-size: 1.1rem; margin-bottom: 15px; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
-    <div id="lobby">
+    <div id="custom-modal" class="overlay" style="display:none; z-index: 3000;">
+        <div class="modal-box">
+            <div id="modal-title" class="modal-title">تنبيه</div>
+            <div id="modal-body" class="modal-body">نص الرسالة هنا</div>
+            <button class="btn-gold" style="width: 100%;" onclick="closeModal()">حسناً</button>
+        </div>
+    </div>
+
+    <div id="rules-modal" class="overlay" style="display:none; z-index: 2500;">
+        <div class="modal-box" style="width: 450px; text-align: right;">
+            <div class="modal-title" style="color: var(--gold); text-align: center;">كيف تلعب كذاب؟ 🃏</div>
+            <div class="modal-body">
+                <ul style="padding-right: 20px;">
+                    <li><b>الهدف:</b> تخلص من كل أوراقك أولاً لتفوز.</li>
+                    <li>اللي عليه الدور يختار رقم (مثلاً K) وينزل عدد من الأوراق المقلوبة ويدعي أنها K.</li>
+                    <li>اللي بعده يقدر ينزل نفس الرقم، أو يسوي Pass، أو <b>يكذّب</b> اللي قبله!</li>
+                    <li><b>إذا كذّبته وطلع كذاب فعلاً:</b> هو ينعاقب وياخذ كل كومة الورق.</li>
+                    <li><b>إذا كذّبته وطلع صادق:</b> أنت تنعاقب وتاخذ كل الكومة!</li>
+                    <li>إذا الكل سوى Pass، تنلغي الكذبة السابقة واللاعب الجديد يختار رقم جديد.</li>
+                </ul>
+            </div>
+            <button class="btn-gold" style="width: 100%;" onclick="document.getElementById('rules-modal').style.display='none'">فهمت، يلا نلعب 🔥</button>
+        </div>
+    </div>
+
+    <div id="lobby" class="overlay">
         <div class="setup-box" id="initial-setup">
-            <h1 style="color: var(--gold); margin-bottom: 5px;">كذاب Pro 🃏</h1>
-            <p style="color:#aaa; font-size: 0.9rem; margin-top: 0;">الإصدار 5.0 (الطاولة الاحترافية)</p>
-            
-            <input type="text" id="player-name" placeholder="اكتب اسمك هنا (مهم)" maxlength="12">
-            
+            <button class="btn-help" onclick="document.getElementById('rules-modal').style.display='flex'">؟</button>
+            <h1 style="color: var(--gold); margin-bottom: 5px;">كذاب Pro 👑</h1>
+            <p style="color:#aaa; font-size: 0.9rem; margin-top: 0;">v7.0 (النسخة الخارقة - مضاد الفصل)</p>
+            <input type="text" id="player-name" placeholder="اكتب اسمك هنا" maxlength="12">
             <button class="btn-gold" style="width: 100%; margin-bottom: 10px;" onclick="startHost()">إنشاء طاولة (Host)</button>
             <div style="display:flex; gap:10px; width: 100%;">
                 <input type="text" id="join-id" placeholder="كود الطاولة" style="margin:0; width: 60%;">
                 <button class="btn-gray" style="width: 40%;" onclick="joinRoom()">دخول</button>
             </div>
         </div>
-        
         <div class="setup-box" id="waiting-area" style="display:none;">
             <h2 style="color: white;">كود الطاولة:</h2>
             <div style="background: black; padding: 15px; border-radius: 10px; color: var(--gold); font-size: 1.8rem; user-select: all; margin-bottom: 15px; letter-spacing: 2px;" id="room-code">...</div>
-            <p>أرسله لأصحابك ليدخلوا معك</p>
             <p style="font-size: 1.2rem;">عدد اللاعبين الآن: <strong id="peer-count" style="color:var(--gold)">1</strong> / 10</p>
-            <button class="btn-gold" id="start-game-btn" onclick="broadcastStart()" style="display:none; width: 100%; font-size: 1.2rem;">توزيع الورق 🃏</button>
+            <button class="btn-gold" id="start-game-btn" onclick="broadcastStart()" style="display:none; width: 100%; font-size: 1.2rem;">توزيع الورق وبدء اللعب 🃏</button>
         </div>
     </div>
 
-    <div id="status-bar" style="text-align: center; padding: 10px; color: var(--gold); font-size: 1.2rem; background: rgba(0,0,0,0.8); font-weight: bold; z-index: 100;">بانتظار البداية...</div>
+    <div id="status-bar">بانتظار البداية...</div>
 
     <div class="table-area">
         <div class="poker-table">
+            <div id="claim-msg"></div>
             <div id="pot-container" style="position: relative; width: 60px; height: 80px;"></div>
-            <div id="claim-msg" style="position:absolute; top: -15px; background: rgba(0,0,0,0.8); border: 2px solid var(--gold); color: var(--gold); padding: 5px 15px; border-radius: 20px; display: none; font-weight: bold;"></div>
+            <div id="pot-count-badge">الكومة: 0</div>
         </div>
         <div id="avatars-container"></div>
     </div>
 
-    <div class="hand" id="my-hand"></div>
-
-    <div class="controls">
-        <select id="claim-val" style="padding:10px; border-radius:8px; font-weight: bold; font-size: 1.1rem; outline: none;">
-            <option value="" disabled selected>ادّعي أن الورق...</option>
-            <option value="A">A</option><option value="2">2</option><option value="3">3</option>
-            <option value="4">4</option><option value="5">5</option><option value="6">6</option>
-            <option value="7">7</option><option value="8">8</option><option value="9">9</option>
-            <option value="10">10</option><option value="J">J</option><option value="Q">Q</option><option value="K">K</option>
-        </select>
-        <button class="btn-gold" onclick="playCards()">تنزيل الورق</button>
-        <button class="btn-gray" onclick="passTurn()">Pass / تمرير</button>
-        <button class="btn-red" onclick="callBluff()">كــــذاب!</button>
+    <div class="hand-container">
+        <div class="hand" id="my-hand"></div>
+        <div class="controls">
+            <select id="claim-val">
+                <option value="" disabled selected>ادّعي أن الورق...</option>
+                <option value="A">A</option><option value="2">2</option><option value="3">3</option>
+                <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+                <option value="10">10</option><option value="J">J</option><option value="Q">Q</option><option value="K">K</option>
+            </select>
+            <button class="btn-gold" onclick="playCards()">تنزيل الورق</button>
+            <button class="btn-gray" onclick="passTurn()">Pass</button>
+            <button class="btn-red" id="btn-bluff" onclick="callBluff()">كــــذاب!</button>
+        </div>
     </div>
 
 <script>
-    // --- محرك الصوت المدمج ---
+    // --- نظام النوافذ المنبثقة (Modals) ---
+    function showModal(title, msg, type = "info") {
+        const modal = document.getElementById('custom-modal');
+        const titleEl = document.getElementById('modal-title');
+        titleEl.innerText = title;
+        document.getElementById('modal-body').innerText = msg;
+        
+        if(type === 'error') { titleEl.style.color = 'var(--accent)'; }
+        else if(type === 'success') { titleEl.style.color = 'var(--success)'; }
+        else { titleEl.style.color = 'var(--gold)'; }
+        
+        modal.style.display = 'flex';
+    }
+    function closeModal() { document.getElementById('custom-modal').style.display = 'none'; }
+
+    // --- الصوتيات ---
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     let audioCtx;
     function initAudio() { if(!audioCtx) audioCtx = new AudioContext(); if(audioCtx.state === 'suspended') audioCtx.resume(); }
-    
     function playSound(type) {
         if(!audioCtx) return;
-        const osc = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
+        const osc = audioCtx.createOscillator(); const gainNode = audioCtx.createGain();
         osc.connect(gainNode); gainNode.connect(audioCtx.destination);
-        
-        if(type === 'play') { // صوت تنزيل الورق
-            osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.1);
-            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-        } else if(type === 'turn') { // صوت دورك
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.3);
-        } else if(type === 'bluff') { // صوت الكذاب
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(150, audioCtx.currentTime);
-            gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.5);
-        } else if(type === 'pass') { // صوت التمرير
-            osc.frequency.setValueAtTime(300, audioCtx.currentTime);
-            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.2);
-        }
+        if(type === 'play') { osc.frequency.setValueAtTime(400, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.1); gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1); osc.start(); osc.stop(audioCtx.currentTime + 0.1); }
+        else if(type === 'turn') { osc.type = 'sine'; osc.frequency.setValueAtTime(880, audioCtx.currentTime); gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3); osc.start(); osc.stop(audioCtx.currentTime + 0.3); }
+        else if(type === 'bluff') { osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, audioCtx.currentTime); gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5); osc.start(); osc.stop(audioCtx.currentTime + 0.5); }
     }
 
-    // --- متغيرات اللعبة ---
+    // --- التوكن والمتغيرات الأساسية ---
+    let myToken = localStorage.getItem('kaddab_token');
+    if(!myToken) { myToken = Math.random().toString(36).substr(2); localStorage.setItem('kaddab_token', myToken); }
+    
     let peer, conn, connections = [];
-    let gameState = { players: [], currentPlayer: 0, pot: [], currentClaim: "", lastPlayer: -1, bluffEventId: 0 };
+    let gameState = { players: [], currentPlayer: 0, pot: [], currentClaim: "", lastPlayer: -1, bluffEventId: 0, gameStarted: false };
+    let hostHandBackup = {}; // السيرفر يحتفظ بنسخة من يد الجميع لحمايتهم عند انقطاع الاتصال
     let isHost = false, myHand = [], selected = [], myIndex = 0, myName = "";
-    let processedBluffIds = []; // لمنع تكرار سحب ورق الكومة
+    let processedBluffIds = [];
 
-    function getPlayerName() {
-        let name = document.getElementById('player-name').value.trim();
-        return name || `لاعب ${Math.floor(Math.random() * 1000)}`;
-    }
+    function getPlayerName() { return document.getElementById('player-name').value.trim() || `لاعب ${Math.floor(Math.random() * 100)}`; }
+    function updatePeerCount() { if(isHost) { connections = connections.filter(c => c.open); document.getElementById('peer-count').innerText = connections.length + 1; } }
 
-    function updatePeerCount() {
-        if(isHost) {
-            connections = connections.filter(c => c.open);
-            document.getElementById('peer-count').innerText = connections.length + 1;
-        }
-    }
+    window.onbeforeunload = function() { if(isHost && gameState.gameStarted) return "إذا خرجت ستنتهي اللعبة للجميع!"; };
 
+    // --- هندسة الاتصال (الاستقبال) ---
     function setupConn(c) {
         c.on('data', data => {
             if(data.type === 'HELLO_HOST') {
-                c.playerName = data.name; // حفظ اسم اللاعب
-                connections.push(c);
-                updatePeerCount();
-                c.send({ type: 'HELLO_CLIENT' });
+                if(gameState.gameStarted) {
+                    // نظام الاستعادة: هل هو لاعب قديم طرد ورجع؟
+                    let existing = gameState.players.find(p => p.token === data.token);
+                    if(existing) {
+                        c.playerName = data.name; c.playerToken = data.token;
+                        connections.push(c);
+                        c.send({ type: 'RECONNECT', hand: hostHandBackup[data.token], state: gameState, yourIndex: existing.index });
+                    } else {
+                        // لاعب جديد يحاول يدخل واللعبة بدأت
+                        c.send({ type: 'REJECTED' });
+                    }
+                } else {
+                    c.playerName = data.name; c.playerToken = data.token;
+                    connections.push(c); updatePeerCount();
+                    c.send({ type: 'HELLO_CLIENT' });
+                }
             }
-            else if (data.type === 'HELLO_CLIENT') {
-                document.getElementById('initial-setup').innerHTML = `<h2 style='color:var(--gold)'>تم الاتصال! ✅</h2><p>انتظر المضيف يوزع الورق...</p>`;
-            }
-            else if(data.type === 'START') {
+            else if (data.type === 'HELLO_CLIENT') { document.getElementById('initial-setup').innerHTML = `<h2 style='color:var(--gold)'>تم الاتصال! ✅</h2><p>انتظر المضيف يوزع الورق...</p>`; }
+            else if (data.type === 'REJECTED') { showModal("مغلقة 🔒", "عذراً، اللعبة بدأت بالفعل ولا يمكنك الدخول الآن.", "error"); if(peer) peer.destroy(); }
+            else if (data.type === 'START' || data.type === 'RECONNECT') {
                 document.getElementById('lobby').style.display = 'none';
-                myHand = data.hand; gameState = data.state; myIndex = data.yourIndex;
+                myHand = data.hand; gameState = data.state; myIndex = data.yourIndex; render();
+                if(data.type === 'RECONNECT') showModal("مرحباً بعودتك 🔄", "تمت استعادة اتصالك وورقك بنجاح!", "success");
+            }
+            else if (data.type === 'UPDATE') {
+                gameState = data.state;
+                if(gameState.potToGive && gameState.potToGive.target === myIndex && !processedBluffIds.includes(gameState.bluffEventId)) {
+                    myHand.push(...gameState.potToGive.cards); processedBluffIds.push(gameState.bluffEventId);
+                    if(!isHost) conn.send({ type: 'BACKUP_HAND', token: myToken, hand: myHand }); else hostHandBackup[myToken] = myHand;
+                }
+                if(isHost) { connections = connections.filter(cli => cli.open); connections.forEach(cli => cli.send({ type: 'UPDATE', state: gameState })); }
                 render();
             }
-            else if(data.type === 'UPDATE') {
-                gameState = data.state;
-                
-                // معالجة استلام ورق الكومة بعد التكذيب
-                if(gameState.potToGive && gameState.potToGive.target === myIndex && !processedBluffIds.includes(gameState.bluffEventId)) {
-                    myHand.push(...gameState.potToGive.cards);
-                    processedBluffIds.push(gameState.bluffEventId);
-                }
-
-                if(isHost) { 
-                    connections = connections.filter(cli => cli.open);
-                    connections.forEach(cli => cli.send({ type: 'UPDATE', state: gameState }));
-                }
-                render();
+            else if (data.type === 'BACKUP_HAND' && isHost) {
+                hostHandBackup[data.token] = data.hand; // السيرفر يخزن ورق اللاعب
             }
         });
         c.on('close', updatePeerCount);
     }
 
+    // --- المضيف (Host) ---
     function startHost() {
-        initAudio();
-        myName = getPlayerName();
-        isHost = true;
+        initAudio(); myName = getPlayerName(); isHost = true;
         document.getElementById('initial-setup').innerHTML = "<h2>جاري تجهيز الطاولة... ⏳</h2>";
         peer = new Peer();
-        peer.on('open', id => {
-            document.getElementById('initial-setup').style.display = 'none';
-            document.getElementById('waiting-area').style.display = 'block';
-            document.getElementById('room-code').innerText = id;
-            document.getElementById('start-game-btn').style.display = 'block';
-        });
+        peer.on('open', id => { document.getElementById('initial-setup').style.display = 'none'; document.getElementById('waiting-area').style.display = 'block'; document.getElementById('room-code').innerText = id; document.getElementById('start-game-btn').style.display = 'block'; });
         peer.on('connection', c => setupConn(c));
     }
 
+    // --- الضيف (Client) ---
     function joinRoom() {
-        initAudio();
-        myName = getPlayerName();
+        initAudio(); myName = getPlayerName();
         const hostId = document.getElementById('join-id').value.trim();
-        if(!hostId) return alert("أدخل الكود يا بطل!");
-        
+        if(!hostId) return showModal("تنبيه", "أدخل الكود يا بطل!", "error");
         document.getElementById('initial-setup').innerHTML = "<h2>جاري البحث عن الطاولة... ⏳</h2>";
         peer = new Peer();
-        peer.on('open', id => {
-            conn = peer.connect(hostId, { reliable: true });
-            setupConn(conn);
-            conn.on('open', () => conn.send({ type: 'HELLO_HOST', name: myName }));
-        });
-        peer.on('error', () => { alert("الرقم خطأ أو المضيف قفل الغرفة!"); location.reload(); });
+        peer.on('open', id => { conn = peer.connect(hostId, { reliable: true }); setupConn(conn); conn.on('open', () => conn.send({ type: 'HELLO_HOST', name: myName, token: myToken })); });
+        peer.on('error', () => { showModal("خطأ", "الرقم خطأ أو الغرفة مغلقة!", "error"); setTimeout(()=>location.reload(), 2000); });
     }
 
+    // --- بدء اللعب والتوزيع ---
     function broadcastStart() {
         if(!isHost) return;
-        playSound('play');
-        connections = connections.filter(c => c.open);
+        playSound('play'); connections = connections.filter(c => c.open);
+        gameState.gameStarted = true; // قفل الغرفة
         
-        // بناء قائمة اللاعبين (عشوائياً)
-        let playersArr = [{ name: myName, conn: null }];
-        connections.forEach(c => playersArr.push({ name: c.playerName, conn: c }));
-        playersArr.sort(() => Math.random() - 0.5); // عشوائية المقاعد
+        let playersArr = [{ name: myName, token: myToken, conn: null }];
+        connections.forEach(c => playersArr.push({ name: c.playerName, token: c.playerToken, conn: c }));
+        playersArr.sort(() => Math.random() - 0.5);
+        gameState.players = playersArr.map((p, i) => ({ index: i, name: p.name, token: p.token, cardCount: 0 }));
         
-        gameState.players = playersArr.map((p, i) => ({ index: i, name: p.name, cardCount: 0 }));
+        let deck = []; const ranks = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+        ranks.forEach(r => { for(let i=0; i<8; i++) deck.push(r); }); deck.sort(() => Math.random() - 0.5);
         
-        // تجهيز 104 بطاقة (مجموعتين كاملة)
-        let deck = [];
-        const ranks = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
-        ranks.forEach(r => { for(let i=0; i<8; i++) deck.push(r); });
-        deck.sort(() => Math.random() - 0.5);
-        
-        // التوزيع بالتساوي
         let hands = Array.from({length: playersArr.length}, () => []);
-        let pIdx = 0;
-        while(deck.length > 0) { hands[pIdx % playersArr.length].push(deck.pop()); pIdx++; }
-        
+        let pIdx = 0; while(deck.length > 0) { hands[pIdx % playersArr.length].push(deck.pop()); pIdx++; }
         playersArr.forEach((p, i) => gameState.players[i].cardCount = hands[i].length);
 
         playersArr.forEach((p, i) => {
+            hostHandBackup[p.token] = hands[i]; // حفظ نسخة بالسيرفر
             if(p.conn) p.conn.send({ type: 'START', hand: hands[i], state: gameState, yourIndex: i });
             else { myHand = hands[i]; myIndex = i; }
         });
-        
-        document.getElementById('lobby').style.display = 'none';
-        render();
+        document.getElementById('lobby').style.display = 'none'; render();
     }
 
+    // --- آليات اللعب ---
     function playCards() {
-        if(gameState.currentPlayer !== myIndex) return alert("مب دورك! اصبر 🛑");
-        if(selected.length === 0) return alert("اختر ورقة على الأقل!");
+        if(gameState.currentPlayer !== myIndex) return showModal("تنبيه", "مب دورك! اصبر شوي 🛑", "error");
+        if(selected.length === 0) return showModal("تنبيه", "اختر ورقة على الأقل عشان تنزلها!", "error");
 
         let claim = document.getElementById('claim-val').value;
-        if(!claim && !gameState.currentClaim) return alert("حدد ادعاءك (الرقم اللي بتنزله)!");
+        if(!claim && !gameState.currentClaim) return showModal("تنبيه", "حدد الرقم اللي بتدعي إنك نزلته!", "error");
         if(!gameState.currentClaim) gameState.currentClaim = claim;
 
         playSound('play');
-        let played = [];
-        selected.sort((a,b)=>b-a).forEach(idx => played.push(myHand.splice(idx, 1)[0]));
+        let played = []; selected.sort((a,b)=>b-a).forEach(idx => played.push(myHand.splice(idx, 1)[0]));
         
-        gameState.players[myIndex].cardCount -= played.length; // خصم الورق من العرض
+        gameState.players[myIndex].cardCount -= played.length;
         gameState.pot.push(...played);
         gameState.lastPlayer = myIndex;
-        
-        // الدور يروح للاعب اللي يمينك (عكس عقارب الساعة = Index + 1)
         gameState.currentPlayer = (gameState.currentPlayer + 1) % gameState.players.length;
         selected = [];
+        
+        // إرسال اليد الجديدة للسيرفر كنسخة احتياطية
+        if(!isHost) conn.send({ type: 'BACKUP_HAND', token: myToken, hand: myHand }); else hostHandBackup[myToken] = myHand;
         syncData();
     }
 
     function passTurn() {
         if(gameState.currentPlayer !== myIndex) return;
-        playSound('pass');
+        playSound('play');
+        gameState.currentClaim = ""; gameState.lastPlayer = -1; 
         gameState.currentPlayer = (gameState.currentPlayer + 1) % gameState.players.length;
-        syncData();
+        selected = []; document.getElementById('claim-val').value = ""; syncData();
     }
 
     function callBluff() {
-        if(gameState.pot.length === 0 || gameState.lastPlayer === myIndex) return;
+        if(gameState.pot.length === 0 || gameState.lastPlayer === -1 || gameState.lastPlayer === myIndex) return;
         playSound('bluff');
-        
         let isLying = gameState.pot.slice(-1)[0] !== gameState.currentClaim;
         let targetIndex = isLying ? gameState.lastPlayer : myIndex;
         
-        gameState.bluffEventId = Math.random(); // رقم تعريفي فريد للحدث
+        gameState.bluffEventId = Math.random();
         gameState.potToGive = { target: targetIndex, cards: [...gameState.pot] };
         gameState.players[targetIndex].cardCount += gameState.pot.length;
         
-        let msg = isLying 
-            ? `كفو! صدته كذاب 🤥 الورق بيروح لـ ${gameState.players[targetIndex].name}` 
-            : `أوبس! طلع صادق 😇 أنت بتاخذ كل الورق`;
-        alert(msg);
+        showModal("النتيجة 🔍", isLying ? `كفو! كذاب 🤥 الورق يروح لـ ${gameState.players[targetIndex].name}` : `طلعت ظالمه 😇 أنت بتاخذ الورق!`, isLying ? "success" : "error");
         
-        // اللي يضغط كذاب يستلم الدور
         gameState.currentPlayer = myIndex; 
-        gameState.pot = [];
-        gameState.currentClaim = "";
+        gameState.pot = []; gameState.currentClaim = ""; gameState.lastPlayer = -1;
         
-        // إضافة الورق يدوياً لنفسي إذا كنت أنا الخسران
-        if(targetIndex === myIndex) {
-            myHand.push(...gameState.potToGive.cards);
-            processedBluffIds.push(gameState.bluffEventId);
+        if(targetIndex === myIndex) { 
+            myHand.push(...gameState.potToGive.cards); processedBluffIds.push(gameState.bluffEventId); 
+            if(!isHost) conn.send({ type: 'BACKUP_HAND', token: myToken, hand: myHand }); else hostHandBackup[myToken] = myHand;
         }
-        
-        syncData();
+        document.getElementById('claim-val').value = ""; syncData();
     }
 
     function syncData() {
         const data = { type: 'UPDATE', state: gameState };
-        if(isHost) {
-            connections = connections.filter(c => c.open);
-            connections.forEach(c => c.send(data));
-        } else conn.send(data);
+        if(isHost) { connections = connections.filter(c => c.open); connections.forEach(c => c.send(data)); } else conn.send(data);
         render();
     }
 
     function render() {
-        // 1. رسم ورق اليد (بدون سكرول)
-        const handEl = document.getElementById('my-hand');
-        handEl.innerHTML = '';
+        const handEl = document.getElementById('my-hand'); handEl.innerHTML = '';
         myHand.sort().forEach((card, idx) => {
-            const c = document.createElement('div');
-            c.className = `card ${selected.includes(idx)?'selected':''}`;
+            const c = document.createElement('div'); c.className = `card ${selected.includes(idx)?'selected':''}`;
             c.innerHTML = `<span>${card}</span><span style="align-self:flex-end; transform:rotate(180deg)">${card}</span>`;
-            c.onclick = () => { playSound('pass'); selected.includes(idx) ? selected.splice(selected.indexOf(idx), 1) : selected.push(idx); render(); };
+            c.onclick = () => { playSound('play'); selected.includes(idx) ? selected.splice(selected.indexOf(idx), 1) : selected.push(idx); render(); };
             handEl.appendChild(c);
         });
 
-        // 2. شريط الحالة والتنبيه الصوتي
         const status = document.getElementById('status-bar');
         if(gameState.currentPlayer === myIndex) {
-            if(status.innerText !== "🔥 دورك! 🔥") playSound('turn'); // تنبيه صوتي عند بداية دورك فقط
-            status.innerText = "🔥 دورك! 🔥";
-            status.style.color = "#00ff00";
+            if(status.innerText !== "🔥 دورك! 🔥") playSound('turn');
+            status.innerText = "🔥 دورك! 🔥"; status.style.color = "#00ff00";
         } else {
-            status.innerText = `⏳ بانتظار ${gameState.players[gameState.currentPlayer]?.name} ⏳`;
-            status.style.color = "white";
+            status.innerText = `⏳ بانتظار ${gameState.players[gameState.currentPlayer]?.name} ⏳`; status.style.color = "white";
         }
 
-        const claimMsg = document.getElementById('claim-msg');
-        if(gameState.currentClaim) { claimMsg.innerText = `المطلوب: ${gameState.currentClaim}`; claimMsg.style.display = "block"; } 
-        else claimMsg.style.display = "none";
+        const claimSelect = document.getElementById('claim-val');
+        if(gameState.currentClaim) { claimSelect.style.display = "none"; document.getElementById('claim-msg').innerText = `المطلوب: ${gameState.currentClaim}`; document.getElementById('claim-msg').style.display = "block"; } 
+        else { claimSelect.style.display = "inline-block"; document.getElementById('claim-msg').style.display = "none"; }
         
-        // 3. رسم الكومة
-        const potCont = document.getElementById('pot-container');
-        potCont.innerHTML = '';
+        const bluffBtn = document.getElementById('btn-bluff');
+        if(gameState.pot.length === 0 || gameState.lastPlayer === -1 || gameState.lastPlayer === myIndex) { bluffBtn.disabled = true; } else { bluffBtn.disabled = false; }
+
+        document.getElementById('pot-count-badge').innerText = `الكومة: ${gameState.pot.length}`;
+        
+        const potCont = document.getElementById('pot-container'); potCont.innerHTML = '';
         gameState.pot.forEach((_, i) => {
-            const p = document.createElement('div');
-            p.className = 'pot-card';
-            p.style.setProperty('--r', `${(i * 17) % 360}deg`);
-            potCont.appendChild(p);
+            const p = document.createElement('div'); p.className = 'pot-card';
+            p.style.setProperty('--r', `${(i * 17) % 360}deg`); potCont.appendChild(p);
         });
 
-        // 4. رسم اللاعبين حول الطاولة (عكس عقارب الساعة)
-        const avatarsCont = document.getElementById('avatars-container');
-        avatarsCont.innerHTML = '';
+        const avatarsCont = document.getElementById('avatars-container'); avatarsCont.innerHTML = '';
         let total = gameState.players.length;
-        
         gameState.players.forEach(p => {
-            if(p.index === myIndex) return; // لا ترسم نفسك على الطاولة (أنت بالأسفل)
-            
-            // حساب الزاوية ليكون الترتيب عكس عقارب الساعة
+            if(p.index === myIndex) return; 
             let relIndex = (p.index - myIndex + total) % total; 
             let angleDeg = 90 - (360 / total) * relIndex; 
             let angleRad = angleDeg * (Math.PI / 180);
-            
-            let x = 50 + 55 * Math.cos(angleRad); // 55% radius
-            let y = 50 + 60 * Math.sin(angleRad); // 60% radius
+            let x = 50 + 48 * Math.cos(angleRad); let y = 50 + 48 * Math.sin(angleRad); 
 
             const div = document.createElement('div');
             div.className = `avatar ${gameState.currentPlayer === p.index ? 'active' : ''}`;
-            div.style.left = `${x}%`;
-            div.style.top = `${y}%`;
+            div.style.left = `${x}%`; div.style.top = `${y}%`;
             div.innerHTML = `<div class="name">${p.name}</div><div class="cards">🎴 ${p.cardCount}</div>`;
             avatarsCont.appendChild(div);
         });
