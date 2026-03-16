@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>كذاب Pro - الأسطورة v9.0</title>
+    <title>كذاب Pro - v11</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=11.0">
 </head>
 <body>
 
@@ -32,9 +32,9 @@
 
     <div id="lobby" class="overlay">
         <div class="setup-box" id="initial-setup">
-            <button class="btn-help" onclick="showModal('القوانين ❓', 'تخلص من أوراقك لتفوز!\nاللي ينزّل يختار رقم، واللي بعده يقدر يكذبّه أو يسوي Pass.\nإذا جاك Pass لازم تختار رقم وتلعب، ما تقدر تسوي Pass.\nالورق يترتب تصاعدي تلقائياً 🃏', 'info')">؟</button>
+            <button class="btn-help" onclick="showModal('القوانين ❓', 'تخلص من أوراقك لتفوز!\nاللي ينزّل يختار رقم، واللي بعده يقدر يكذبّه أو يسوي Pass.\nإذا جاك Pass لازم تختار رقم وتلعب.\nالورق يترتب تصاعدي تلقائياً 🃏', 'info')">؟</button>
             <h1 style="color: var(--gold-primary); margin-bottom: 5px;">كذاب Pro 👑</h1>
-            <p style="color:#aaa; font-size: 0.9rem; margin-top: 0;">v9.0 (النسخة السينمائية)</p>
+            <p style="color:#aaa; font-size: 0.9rem; margin-top: 0;">v11.0 (تصميم الطاولة الجديد)</p>
             <input type="text" id="player-name" placeholder="اكتب اسمك هنا" maxlength="12">
             <button class="btn-gold" style="width: 100%; margin-bottom: 10px;" onclick="startHost()">إنشاء طاولة (Host)</button>
             <div style="display:flex; gap:10px; width: 100%;">
@@ -45,11 +45,10 @@
 
         <div class="setup-box" id="waiting-area" style="display:none;">
             <h2 style="color: white; margin-bottom: 10px;">كود الطاولة:</h2>
-            <div id="room-code" class="room-code-display">...</div>
+            <div id="room-code" class="room-code-display selectable">...</div>
             <p style="font-size: 1.2rem; margin-bottom: 10px;">عدد اللاعبين: <strong id="peer-count" style="color:var(--gold-primary)">1</strong></p>
             
-            <div class="lobby-players-list" id="lobby-players-list">
-                </div>
+            <div class="lobby-players-list" id="lobby-players-list"></div>
 
             <button class="btn-gold" id="start-game-btn" onclick="this.disabled=true; broadcastStart()" style="display:none; width: 100%; font-size: 1.2rem; margin-top: 15px;">توزيع الورق 🃏</button>
         </div>
@@ -59,14 +58,18 @@
     <div id="status-bar">بانتظار البداية...</div>
 
     <div class="table-area" id="table-area" style="display: none;">
-        <div class="poker-table">
-            <div id="claim-hologram" class="claim-hologram" style="display: none;">
-                المطلوب: <span id="claim-target-number">K</span>
-            </div>
-            <div id="pot-container" class="pot-container"></div>
-            <div id="pot-count-badge" class="pot-count-badge">الكومة: 0 بطاقة</div>
+        
+        <div id="claim-hologram" class="claim-hologram" style="display: none;">
+            المطلوب: <span id="claim-target-number">K</span>
         </div>
-        <div id="avatars-container"></div>
+
+        <div class="poker-table">
+            <div id="pot-container" class="pot-container"></div>
+            <div id="avatars-container"></div>
+        </div>
+
+        <div id="pot-count-badge" class="pot-count-badge">الكومة: 0 بطاقة</div>
+
     </div>
 
     <div class="hand-container" id="hand-container" style="display: none;">
@@ -85,6 +88,6 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=11.0"></script>
 </body>
 </html>

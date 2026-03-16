@@ -10,13 +10,15 @@
     --accent-red: #ff2a2a;
     --success-green: #00ff88;
     --glass-bg: rgba(10, 20, 30, 0.85);
-    --transition-fast: 0.2s ease;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: 'Cairo', sans-serif; background: radial-gradient(circle at 50% 50%, #15232d, #050a0e); color: white; min-height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-/* السكرول بار */
+/* السماح بتحديد النصوص لبعض العناصر فقط (مثل كود الغرفة) */
+.selectable { user-select: text !important; -webkit-user-select: text !important; }
+.card, .avatar, button, select { user-select: none; -webkit-user-select: none; }
+
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--gold-primary); border-radius: 10px; }
@@ -34,84 +36,110 @@ body { font-family: 'Cairo', sans-serif; background: radial-gradient(circle at 5
 .btn-help { position: absolute; top: 15px; left: 15px; background: var(--gold-primary); color: #000; border-radius: 50%; width: 40px; height: 40px; font-weight: 900; font-size: 1.4rem; cursor: pointer; border: none; box-shadow: 0 0 10px var(--gold-glow); transition: 0.2s; }
 .btn-help:hover { transform: scale(1.1); }
 
-/* المدخلات وكود الغرفة */
 input { padding: 15px; border-radius: 10px; border: 2px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.6); color: white; width: 100%; text-align: center; font-weight: 900; font-size: 1.2rem; font-family: 'Cairo'; margin-bottom: 15px; transition: 0.3s; }
 input:focus { outline: none; border-color: var(--gold-primary); box-shadow: 0 0 15px var(--gold-glow); }
 .room-code-display { background: linear-gradient(145deg, #1a1a1a, #000); padding: 15px; border-radius: 12px; color: var(--gold-primary); font-size: 2.2rem; font-weight: 900; letter-spacing: 5px; border: 1px solid #333; text-shadow: 0 0 15px var(--gold-glow); margin-bottom: 20px; }
 
-/* قائمة أسماء اللاعبين في اللوبي */
 .lobby-players-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 15px; max-height: 120px; overflow-y: auto; padding: 10px; background: rgba(0,0,0,0.5); border-radius: 10px; border: 1px solid #333; }
 .lobby-player-tag { background: var(--table-green); border: 1px solid var(--gold-primary); padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 1rem; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
 
-/* الأزرار الاحترافية */
-button { padding: 15px 25px; border-radius: 12px; border: none; font-weight: 900; font-size: 1.2rem; font-family: 'Cairo'; cursor: pointer; transition: 0.2s; text-transform: uppercase; position: relative; overflow: hidden; }
-.btn-gold { background: linear-gradient(to bottom, #ffe55c, var(--gold-primary)); color: #3b2a00; box-shadow: 0 6px 0 #b8860b, 0 10px 20px rgba(0,0,0,0.4); }
-.btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 0 #b8860b, 0 15px 25px var(--gold-glow); }
+button { padding: 12px 20px; border-radius: 12px; border: none; font-weight: 900; font-size: 1.1rem; font-family: 'Cairo'; cursor: pointer; transition: 0.2s; text-transform: uppercase; }
+.btn-gold { background: linear-gradient(to bottom, #ffe55c, var(--gold-primary)); color: #3b2a00; box-shadow: 0 6px 0 #b8860b; }
 .btn-gold:active { transform: translateY(4px); box-shadow: 0 2px 0 #b8860b; }
-
 .btn-red { background: linear-gradient(to bottom, #ff6b6b, var(--accent-red)); color: white; box-shadow: 0 6px 0 #b30000; }
-.btn-red:hover { transform: translateY(-2px); box-shadow: 0 8px 0 #b30000, 0 15px 25px rgba(255,42,42,0.6); }
 .btn-red:active { transform: translateY(4px); box-shadow: 0 2px 0 #b30000; }
-
 .btn-gray { background: linear-gradient(to bottom, #666, #444); color: white; box-shadow: 0 6px 0 #222; }
 .btn-gray:active { transform: translateY(4px); box-shadow: 0 2px 0 #222; }
 button:disabled { filter: grayscale(100%) opacity(0.4); cursor: not-allowed; transform: none !important; box-shadow: 0 6px 0 #222 !important; }
 
-/* أشرطة الحالة */
 #action-log { width: 100%; text-align: center; padding: 10px; color: #fff; font-size: 1.1rem; background: linear-gradient(90deg, transparent, rgba(255, 42, 42, 0.5), transparent); border-bottom: 2px solid var(--accent-red); font-weight: 900; text-shadow: 1px 1px 2px black; z-index: 100; display: none; }
-#status-bar { width: 100%; text-align: center; padding: 12px; color: var(--gold-primary); font-size: 1.5rem; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); font-weight: 900; border-bottom: 1px solid #444; z-index: 100; text-shadow: 0 2px 5px black; display: none; }
+#status-bar { width: 100%; text-align: center; padding: 12px; color: var(--gold-primary); font-size: 1.4rem; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); font-weight: 900; border-bottom: 1px solid #444; z-index: 100; text-shadow: 0 2px 5px black; display: none; }
 
-/* الطاولة الفخمة */
-.table-area { flex: 1; position: relative; width: 98vw; max-width: 900px; margin: 15px auto; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.poker-table { width: 92%; height: 75%; background: radial-gradient(ellipse at center, var(--table-green), var(--table-dark)); border: 24px solid var(--wood-light); border-radius: 200px; box-shadow: inset 0 0 60px rgba(0,0,0,0.9), 0 30px 60px rgba(0,0,0,0.8), 0 0 0 8px var(--wood-dark); position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-
-/* اللوحة المضيئة للرقم المطلوب (Hologram) */
-.claim-hologram { position: absolute; top: 10%; background: rgba(0,0,0,0.8); border: 2px solid var(--gold-primary); color: white; padding: 10px 30px; border-radius: 30px; font-weight: 900; font-size: 1.8rem; box-shadow: 0 0 20px var(--gold-glow), inset 0 0 10px var(--gold-glow); z-index: 60; animation: floatHolo 3s ease-in-out infinite; }
-.claim-hologram span { color: var(--gold-primary); font-size: 2.2rem; text-shadow: 0 0 10px var(--gold-primary); margin-right: 5px; }
-@keyframes floatHolo { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-
-/* الكومة والعداد */
-.pot-container { position: relative; width: 60px; height: 85px; z-index: 40; margin-top: 20px; }
-.pot-card { position: absolute; width: 50px; height: 75px; background: repeating-linear-gradient(45deg, #111, #111 10px, #2a2a2a 10px, #2a2a2a 20px); border: 2px solid #555; border-radius: 6px; transform: rotate(var(--r)); box-shadow: 2px 2px 12px rgba(0,0,0,0.7); }
-.pot-count-badge { position: absolute; bottom: 12%; background: #111; color: var(--gold-primary); padding: 8px 20px; border-radius: 20px; font-size: 1.3rem; border: 2px solid var(--gold-primary); font-weight: 900; box-shadow: 0 5px 15px rgba(0,0,0,0.8); z-index: 60; }
-
-/* اللاعبين (Avatars) */
-.avatar { position: absolute; background: rgba(10,20,30,0.9); border: 2px solid #555; border-radius: 30px; padding: 6px 12px; display: flex; align-items: center; gap: 12px; transform: translate(-50%, -50%); transition: 0.3s; z-index: 70; box-shadow: 0 8px 20px rgba(0,0,0,0.8); }
-.avatar.active { border-color: var(--success-green); background: rgba(0,40,15,0.9); transform: translate(-50%, -60%) scale(1.2); box-shadow: 0 0 30px rgba(0,255,136,0.6); animation: activePulse 1.5s infinite; }
-@keyframes activePulse { 0% { box-shadow: 0 0 15px var(--success-green); } 50% { box-shadow: 0 0 35px var(--success-green); } 100% { box-shadow: 0 0 15px var(--success-green); } }
-.avatar .name { font-weight: 900; color: white; font-size: 1.1rem; }
-.avatar .cards { background: linear-gradient(135deg, #ff5555, var(--accent-red)); color: white; border-radius: 20px; font-weight: 900; font-size: 1rem; padding: 4px 10px; border: 1px solid #ff9999; }
-
-/* منطقة اليد والتحكم */
-.hand-container { height: 38vh; width: 100%; background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.4)); border-top: 4px solid var(--wood-light); display: flex; flex-direction: column; z-index: 100; box-shadow: 0 -10px 30px rgba(0,0,0,0.8); }
-.hand { display: flex; flex-wrap: wrap; justify-content: center; padding: 20px 10px; gap: -12px; flex: 1; align-content: flex-start; overflow-y: auto; }
-.card { width: 65px; height: 95px; background: linear-gradient(135deg, #fff, #e0e0e0); border-radius: 8px; color: #111; transition: 0.2s; border: 1px solid #999; display: flex; flex-direction: column; justify-content: space-between; padding: 6px; font-weight: 900; cursor: pointer; font-size: 1.4rem; font-family: Arial; margin-left: -15px; box-shadow: -4px 4px 10px rgba(0,0,0,0.5), inset 0 0 0 2px #fff; position: relative; }
-.card:first-child { margin-left: 0; }
-.card:hover { transform: translateY(-20px) scale(1.05); margin-right: 15px; z-index: 50; box-shadow: -8px 12px 20px rgba(0,0,0,0.6); }
-.card.selected { transform: translateY(-30px) scale(1.1); margin-right: 15px; border: 2px solid var(--gold-primary); background: #fffacd; box-shadow: 0 15px 25px rgba(0,0,0,0.6), 0 0 20px var(--gold-glow); z-index: 60; color: #8b6508; }
-
-.controls { padding: 15px 20px; background: #050a0e; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; border-top: 1px solid #222; }
-select { padding: 12px 20px; border-radius: 12px; font-weight: 900; font-size: 1.2rem; font-family: 'Cairo'; outline: none; border: 2px solid var(--gold-primary); background: #111; color: var(--gold-primary); cursor: pointer; transition: 0.2s; text-align: center;}
-select:focus { box-shadow: 0 0 15px var(--gold-glow); }
-
-/* --- تأثيرات الأكشن الكبيرة (Pass / Bluff) --- */
-.action-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 5000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-.action-text { font-size: 5rem; font-weight: 900; color: white; text-align: center; text-shadow: 0 10px 30px rgba(0,0,0,0.9), 0 0 40px var(--accent-red); transform: scale(0.1); opacity: 0; animation: smashIn 2.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; line-height: 1.2; }
-@keyframes smashIn { 
-    0% { transform: scale(0.1); opacity: 0; } 
-    15% { transform: scale(1.2); opacity: 1; }
-    25% { transform: scale(1); opacity: 1; }
-    80% { transform: scale(1); opacity: 1; filter: blur(0px); }
-    100% { transform: scale(2); opacity: 0; filter: blur(10px); }
+/* الطاولة الجديدة - ترتيب طولي Flexbox */
+.table-area { 
+    flex: 1; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+    gap: 20px; /* مسافة واضحة بين المطلوب، الطاولة، والكومة */
+    width: 100%; 
+    padding: 10px;
 }
 
-/* التوافق مع الجوال */
+.poker-table { 
+    width: 85vw; 
+    max-width: 650px; 
+    height: 250px; /* ارتفاع ثابت يمنع انضغاط الطاولة */
+    background: radial-gradient(ellipse at center, var(--table-green), var(--table-dark)); 
+    border: 20px solid var(--wood-light); 
+    border-radius: 150px; /* شكل بيضاوي مريح للعين */
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.9), 0 20px 40px rgba(0,0,0,0.6), 0 0 0 6px var(--wood-dark); 
+    position: relative; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+}
+
+/* المطلوب: فوق الطاولة بشكل مستقل */
+.claim-hologram { 
+    background: rgba(0,0,0,0.8); 
+    border: 2px solid var(--gold-primary); 
+    color: white; 
+    padding: 8px 30px; 
+    border-radius: 30px; 
+    font-weight: 900; 
+    font-size: 1.5rem; 
+    box-shadow: 0 0 15px var(--gold-glow); 
+}
+.claim-hologram span { color: var(--gold-primary); font-size: 2rem; margin-right: 10px; }
+
+/* الكومة: تحت الطاولة بشكل مستقل */
+.pot-count-badge { 
+    background: #111; 
+    color: var(--gold-primary); 
+    padding: 8px 25px; 
+    border-radius: 20px; 
+    font-size: 1.2rem; 
+    border: 2px solid var(--gold-primary); 
+    font-weight: 900; 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.8); 
+}
+
+.pot-container { position: relative; width: 60px; height: 85px; z-index: 40; }
+.pot-card { position: absolute; width: 50px; height: 75px; background: repeating-linear-gradient(45deg, #111, #111 10px, #2a2a2a 10px, #2a2a2a 20px); border: 2px solid #555; border-radius: 6px; transform: rotate(var(--r)); box-shadow: 2px 2px 12px rgba(0,0,0,0.7); }
+
+/* اللاعبين وحالاتهم (Pass / Bluff) */
+.avatar { position: absolute; background: rgba(10,20,30,0.9); border: 2px solid #555; border-radius: 30px; padding: 6px 12px; display: flex; align-items: center; gap: 12px; transform: translate(-50%, -50%); transition: 0.3s; z-index: 70; box-shadow: 0 8px 20px rgba(0,0,0,0.8); }
+.avatar.active { border-color: var(--success-green); background: rgba(0,40,15,0.9); transform: translate(-50%, -60%) scale(1.15); box-shadow: 0 0 25px rgba(0,255,136,0.6); }
+.avatar .name { font-weight: 900; color: white; font-size: 1rem; }
+.avatar .cards { background: linear-gradient(135deg, #ff5555, var(--accent-red)); color: white; border-radius: 20px; font-weight: 900; font-size: 0.9rem; padding: 4px 10px; }
+
+/* شارة الحالة (Passed, Bluffed, etc) */
+.player-status { position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); font-size: 0.8rem; padding: 2px 8px; border-radius: 10px; font-weight: bold; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.8); animation: popIn 0.3s ease; z-index: 80; }
+.status-pass { background: #666; color: white; }
+.status-play { background: var(--gold-primary); color: black; }
+.status-bluff { background: var(--accent-red); color: white; }
+.status-caught { background: #550000; color: white; border: 1px solid #ff4444; }
+
+.hand-container { height: 35vh; width: 100%; background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.4)); border-top: 4px solid var(--wood-light); display: flex; flex-direction: column; z-index: 100; box-shadow: 0 -10px 30px rgba(0,0,0,0.8); }
+.hand { display: flex; flex-wrap: wrap; justify-content: center; padding: 20px 10px; gap: -12px; flex: 1; align-content: flex-start; overflow-y: auto; }
+.card { width: 60px; height: 85px; background: linear-gradient(135deg, #fff, #e0e0e0); border-radius: 8px; color: #111; transition: 0.2s; border: 1px solid #999; display: flex; flex-direction: column; justify-content: space-between; padding: 6px; font-weight: 900; cursor: pointer; font-size: 1.3rem; font-family: Arial; margin-left: -15px; box-shadow: -4px 4px 10px rgba(0,0,0,0.5); }
+.card:first-child { margin-left: 0; }
+.card:hover { transform: translateY(-20px); margin-right: 15px; z-index: 50; box-shadow: -8px 12px 20px rgba(0,0,0,0.6); }
+.card.selected { transform: translateY(-30px); margin-right: 15px; border: 2px solid var(--gold-primary); background: #fffacd; box-shadow: 0 15px 25px rgba(0,0,0,0.6), 0 0 20px var(--gold-glow); z-index: 60; color: #8b6508; }
+
+.controls { padding: 10px 15px; background: #050a0e; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; border-top: 1px solid #222; }
+select { padding: 10px 15px; border-radius: 12px; font-weight: 900; font-size: 1.1rem; font-family: 'Cairo'; outline: none; border: 2px solid var(--gold-primary); background: #111; color: var(--gold-primary); cursor: pointer; text-align: center; }
+
+.action-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 5000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+.action-text { font-size: 4rem; font-weight: 900; color: white; text-align: center; text-shadow: 0 10px 30px rgba(0,0,0,0.9); transform: scale(0.1); opacity: 0; animation: smashIn 2.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; line-height: 1.2; }
+@keyframes smashIn { 0% { transform: scale(0.1); opacity: 0; } 15% { transform: scale(1.2); opacity: 1; } 25% { transform: scale(1); opacity: 1; } 80% { transform: scale(1); opacity: 1; filter: blur(0px); } 100% { transform: scale(2); opacity: 0; filter: blur(10px); } }
+
 @media (max-width: 768px) {
-    .poker-table { border-width: 15px; border-radius: 120px; width: 95%; height: 85%; }
-    .card { width: 55px; height: 80px; font-size: 1.2rem; margin-left: -20px; }
-    button { padding: 12px 15px; font-size: 1rem; }
-    select { padding: 12px; font-size: 1rem; }
-    .claim-hologram { font-size: 1.3rem; padding: 8px 20px; }
-    .claim-hologram span { font-size: 1.6rem; }
+    .poker-table { border-width: 12px; height: 200px; width: 95vw; }
+    .card { width: 50px; height: 75px; font-size: 1.1rem; margin-left: -20px; }
+    button, select { padding: 10px; font-size: 1rem; }
+    .claim-hologram { font-size: 1.2rem; padding: 5px 20px; }
     .action-text { font-size: 3rem; }
 }
