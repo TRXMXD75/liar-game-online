@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>كذاب Pro - أونلاين</title>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <style>
+        :root { --poker-green: #1a4a1a; --gold: #ffd700; --accent: #ff4444; }
+        body { font-family: 'Cairo', sans-serif; background: #0f2027; color: white; margin: 0; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+        
+        /* شاشة الدخول */
+        #lobby { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: flex; align-items: center; justify-content: center; }
+        .setup-box { background: var(--poker-green); padding: 30px; border-radius: 20px; border: 3px solid var(--gold); text-align: center; }
+        
+        /* طاولة اللعب */
+        .game-container { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .table { width: 80vw; height: 40vh; background: radial-gradient(#2d5a27, #132a13); border: 10px solid #3d2b1f; border-radius: 150px; position: relative; display: flex; align-items: center; justify-content: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        
+        /* البطاقات */
+        .hand { height: 150px; display: flex; justify-content: center; padding: 20px; background: rgba(0,0,0,0.4); }
+        .card { width: 60px; height: 90px; background: white; border-radius: 8px; color: black; margin-left: -20px; transition: 0.3s; border: 1px solid #999; display: flex; flex-direction: column; justify-content: space-between; padding: 5px; font-weight: bold; cursor: pointer; }
+        .card.selected { transform: translateY(-30px); border: 3px solid var(--gold); }
+        
+        .pot-card { position: absolute; width: 50px; height: 75px; background: #333; border: 1px solid #555; border-radius: 5px; transform: rotate(var(--r)); }
+
+        .controls { padding: 15px; background: #000; display: flex; justify-content: center; gap: 10px; }
+        button { padding: 10px 20px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; }
+        .btn-gold { background: var(--gold); }
+        .btn-red { background: var(--accent); color: white; }
+    </style>
+</head>
+<body>
+
+    <div id="lobby">
+        <div class="setup-box" id="initial-setup">
+            <h1>كذاب Pro أونلاين 🌐</h1>
+            <button class="btn-gold" onclick="startHost()">إنشاء غرفة جديدة (Host)</button>
+            <hr>
+            <input type="text" id="join-id" placeholder="أدخل كود الغرفة" style="padding:10px; border-radius:5px;">
+            <button class="btn-gold" onclick="joinRoom()">دخول الغرفة</button>
+        </div>
+        <div class="setup-box" id="waiting-area" style="display:none;">
+            <h2>كود الغرفة: <span id="room-code" style="color:var(--gold)">...</span></h2>
+            <p>انتظر انضمام أصدقائك (عدد المتصلين: <span id="peer-count">1</span>)</p>
+            <button class="btn-gold" id="start-game-btn" onclick="broadcastStart()" style="display:none;">ابدأ اللعب الآن!</button>
+        </div>
+    </div>
+
+    <div class="game-container">
+        <div id="status-bar" style="margin: 10px; color: var(--gold);"></div>
+        <div class="table">
+            <div id="pot-container"></div>
+            <div id="claim-msg" style="position:absolute; top:20px;"></div>
+        </div>
+    </div>
+
+    <div class="hand" id="my-hand"></div>
+
+    <div class="controls">
+        <select id="claim-val" style="padding:10px; border-radius:5px;">
+            <option value="A">A</option><option value="2">2</option><option value="J">J</option><option value="Q">Q</option><option value="K">K</option>
+        </select>
+        <button class="btn-gold" onclick="playCards()">تنزيل</button>
+        <button class="btn-red" onclick="callBluff()">كذاب!</button>
+    </div>
+
+<script>
+    let peer, conn, myId, connections = [];
+    let gameState = { players: [], currentPlayer: 0, pot: [], currentClaim: "", lastPlayer: -1 };
+    let isHost = false;
+    let myHand = [];
+    let selected = [];
+
+    // --- نظام الاتصال ---
+    function startHost() {
+        isHost = true;
+        peer = new Peer();
+        peer.on('open', id => {
+            myId = id;
+            document.getElementById('initial-setup').style.display = 'none';
+            document.getElementById('waiting-area').style.display = 'block';
+            document.getElementById('room-code').innerText = id;
+            document.getElementById('start-game-btn').style.display = 'inline-block';
+        });
+        peer.on('connection', c => {
+            connections.push(c);
+            document.getElementById('peer-count').innerText = connections.length + 1;
+            setupConn(c);
+        });
+    }
+
+    function joinRoom() {
+        const hostId = document.getElementById('join-id').value;
+        if(!hostId) return alert("أدخل الكود!");
+        peer = new Peer();
+        peer.on('open', id => {
+            myId = id;
+            conn = peer.connect(hostId);
+            setupConn(conn);
+            document.getElementById('initial-setup').innerHTML = "<h2>تم الاتصال! بانتظار المضيف ليبدأ...</h2>";
+        });
+    }
+
+    function setupConn(c) {
+        c.on('data', data => {
+            if(data.type === 'START') {
+                document.getElementById('lobby').style.display = 'none';
+                myHand = data.hand;
+                gameState = data.state;
+                render();
+            }
+            if(data.type === 'UPDATE') {
+                gameState = data.state;
+                render();
+            }
+        });
+    }
+
+    // --- منطق اللعبة ---
+    function broadcastStart() {
+        // توزيع الورق (Host Only)
+        let deck = ['A','A','A','A','K','K','K','K','Q','Q','Q','Q','J','J','J','J']; 
+        deck.sort(() => Math.random() - 0.5);
+        
+        let totalPlayers = connections.length + 1;
+        let hands = Array.from({length: totalPlayers}, () => []);
+        deck.forEach((card, i) => hands[i % totalPlayers].push(card));
+
+        gameState.players = Array.from({length: totalPlayers}, (_, i) => i);
+        
+        // إرسال لكل لاعب يده
+        connections.forEach((c, i) => {
+            c.send({ type: 'START', hand: hands[i+1], state: gameState });
+        });
+        
+        myHand = hands[0];
+        document.getElementById('lobby').style.display = 'none';
+        render();
+    }
+
+    function playCards() {
+        if(gameState.currentPlayer !== getMyIdx()) return alert("ليس دورك!");
+        if(selected.length === 0) return;
+
+        let claim = document.getElementById('claim-val').value;
+        if(!gameState.currentClaim) gameState.currentClaim = claim;
+
+        let played = [];
+        selected.sort((a,b)=>b-a).forEach(idx => played.push(myHand.splice(idx, 1)[0]));
+        
+        gameState.pot.push(...played);
+        gameState.lastPlayer = getMyIdx();
+        gameState.currentPlayer = (gameState.currentPlayer + 1) % gameState.players.length;
+        selected = [];
+        
+        syncData();
+    }
+
+    function syncData() {
+        const data = { type: 'UPDATE', state: gameState };
+        if(isHost) {
+            connections.forEach(c => c.send(data));
+        } else {
+            conn.send(data); // تحتاج لإضافة منطق تمرير البيانات عبر المضيف في السيرفر الحقيقي
+        }
+        render();
+    }
+
+    function getMyIdx() {
+        return isHost ? 0 : 1; // تبسيط للنسخة التجريبية
+    }
+
+    function render() {
+        const handEl = document.getElementById('my-hand');
+        handEl.innerHTML = '';
+        myHand.forEach((card, idx) => {
+            const c = document.createElement('div');
+            c.className = `card ${selected.includes(idx)?'selected':''}`;
+            c.innerHTML = `<span>${card}</span>`;
+            c.onclick = () => {
+                if(selected.includes(idx)) selected = selected.filter(i=>i!==idx);
+                else selected.push(idx);
+                render();
+            };
+            handEl.appendChild(c);
+        });
+
+        document.getElementById('status-bar').innerText = (gameState.currentPlayer === getMyIdx()) ? "دورك الآن!" : "انتظر دور الخصم...";
+        document.getElementById('claim-msg').innerText = gameState.currentClaim ? `المطلوب: ${gameState.currentClaim}` : "";
+        
+        // تحديث الكومة
+        const potCont = document.getElementById('pot-container');
+        potCont.innerHTML = '';
+        gameState.pot.forEach(() => {
+            const p = document.createElement('div');
+            p.className = 'pot-card';
+            p.style.setProperty('--r', `${Math.random()*360}deg`);
+            potCont.appendChild(p);
+        });
+    }
+</script>
+</body>
+</html>
