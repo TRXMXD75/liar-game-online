@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>كذاب Pro - v8.0 النهاية</title>
+    <title>كذاب Pro - v8.1 (تم الإصلاح)</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         :root { 
@@ -12,7 +12,6 @@
         }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: radial-gradient(circle at center, #1b2822, #080c0a); color: white; margin: 0; min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
         
-        /* شاشات الانتظار والنوافذ */
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; display: flex; align-items: center; justify-content: center; flex-direction: column; }
         .setup-box { background: var(--table-green); padding: 30px; border-radius: 20px; border: 3px solid var(--gold); text-align: center; max-width: 90%; width: 400px; box-shadow: 0 10px 40px rgba(0,0,0,0.8); position: relative; }
         
@@ -23,27 +22,22 @@
         
         .btn-help { position: absolute; top: 15px; left: 15px; background: var(--gold); color: black; border-radius: 50%; width: 35px; height: 35px; font-weight: bold; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; }
         
-        /* شريط الحالة العلوي وسجل الأحداث */
         #status-bar { width: 100%; text-align: center; padding: 10px; color: var(--gold); font-size: 1.4rem; background: rgba(0,0,0,0.8); font-weight: bold; border-bottom: 1px solid var(--gold); z-index: 100; text-shadow: 0 2px 5px black; }
         #action-log { width: 100%; text-align: center; padding: 8px; color: #fff; font-size: 1rem; background: rgba(255,59,59,0.2); border-bottom: 2px solid var(--accent); font-weight: bold; min-height: 24px; transition: 0.3s; }
 
-        /* منطقة الطاولة */
         .table-area { flex: 1; position: relative; width: 95vw; max-width: 800px; margin: 15px auto; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .poker-table { width: 90%; height: 80%; background: radial-gradient(var(--table-green), var(--table-dark)); border: 20px solid var(--wood); border-radius: 200px; box-shadow: inset 0 0 50px rgba(0,0,0,0.9), 0 20px 40px rgba(0,0,0,0.7); position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         
         #claim-msg { position: absolute; top: 15%; background: rgba(0,0,0,0.8); border: 2px solid var(--gold); color: var(--gold); padding: 5px 20px; border-radius: 20px; font-weight: bold; font-size: 1.3rem; display: none; }
         
-        /* عداد الكومة (تحت الطاولة فوق الورق) */
         .pot-info-area { margin-top: 10px; display: flex; justify-content: center; align-items: center; width: 100%; z-index: 50; }
         #pot-count-badge { background: rgba(0,0,0,0.8); color: var(--gold); padding: 8px 25px; border-radius: 20px; font-size: 1.2rem; border: 2px solid var(--gold); font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
         
-        /* اللاعبين */
         .avatar { position: absolute; background: rgba(0,0,0,0.85); border: 2px solid #555; border-radius: 20px; padding: 5px 10px; display: flex; align-items: center; gap: 10px; transform: translate(-50%, -50%); transition: 0.3s; z-index: 10; box-shadow: 0 5px 15px rgba(0,0,0,0.7); white-space: nowrap; }
         .avatar.active { border-color: #00ff00; box-shadow: 0 0 25px #00ff00; transform: translate(-50%, -60%) scale(1.15); }
         .avatar .name { font-weight: bold; color: white; font-size: 1rem; }
         .avatar .cards { background: var(--accent); color: white; border-radius: 15px; font-weight: bold; font-size: 0.9rem; padding: 3px 8px; box-shadow: inset 0 -2px 5px rgba(0,0,0,0.3); }
         
-        /* الورق واليد */
         .hand-container { height: 35vh; width: 100%; background: rgba(0,0,0,0.4); border-top: 3px solid var(--wood); display: flex; flex-direction: column; }
         .hand { display: flex; flex-wrap: wrap; justify-content: center; padding: 15px; gap: 8px; flex: 1; align-content: flex-start; overflow-y: auto; }
         .card { width: 55px; height: 80px; background: white; border-radius: 8px; color: black; transition: 0.2s; border: 2px solid #999; display: flex; flex-direction: column; justify-content: space-between; padding: 5px; font-weight: bold; cursor: pointer; user-select: none; box-shadow: 2px 2px 8px rgba(0,0,0,0.5); font-size: 1.1rem; }
@@ -51,7 +45,6 @@
         .card.selected { transform: translateY(-20px); border: 3px solid var(--gold); box-shadow: 0 0 20px var(--gold); background: #fffae6; }
         .pot-card { position: absolute; width: 45px; height: 65px; background: #222; border: 1px solid #666; border-radius: 5px; transform: rotate(var(--r)); box-shadow: 2px 2px 10px rgba(0,0,0,0.5); }
         
-        /* التحكم */
         .controls { padding: 15px; background: #0b171c; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; border-top: 1px solid #333; }
         button { padding: 12px 25px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 1.1rem; }
         button:active { transform: scale(0.95); }
@@ -85,7 +78,7 @@
         <div class="setup-box" id="initial-setup">
             <button class="btn-help" onclick="showModal('القوانين ❓', 'تخلص من أوراقك لتفوز!\nاللي ينزّل يختار رقم، واللي بعده يقدر يكذبّه أو يسوي Pass.\nإذا جاك Pass لازم تختار رقم وتلعب، ما تقدر تسوي Pass.\nالورق يترتب تصاعدي تلقائياً 🃏', 'info')">؟</button>
             <h1 style="color: var(--gold); margin-bottom: 5px;">كذاب Pro 👑</h1>
-            <p style="color:#aaa; font-size: 0.9rem; margin-top: 0;">v8.0 (النسخة النهائية الكاملة)</p>
+            <p style="color:#aaa; font-size: 0.9rem; margin-top: 0;">v8.1 (جاهزة للعب)</p>
             <input type="text" id="player-name" placeholder="اكتب اسمك هنا" maxlength="12">
             <button class="btn-gold" style="width: 100%; margin-bottom: 10px;" onclick="startHost()">إنشاء طاولة (Host)</button>
             <div style="display:flex; gap:10px; width: 100%;">
@@ -133,7 +126,6 @@
     </div>
 
 <script>
-    // --- النوافذ المنبثقة ---
     function showModal(title, msg, type = "info") {
         const modal = document.getElementById('custom-modal');
         const titleEl = document.getElementById('modal-title');
@@ -145,7 +137,6 @@
     }
     function closeModal() { document.getElementById('custom-modal').style.display = 'none'; }
 
-    // --- الصوتيات المخصصة والمحسنة ---
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     let audioCtx;
     function initAudio() { if(!audioCtx) audioCtx = new AudioContext(); if(audioCtx.state === 'suspended') audioCtx.resume(); }
@@ -160,13 +151,11 @@
         else if(type === 'win') { osc.type = 'square'; osc.frequency.setValueAtTime(440, audioCtx.currentTime); osc.frequency.setValueAtTime(554, audioCtx.currentTime + 0.1); osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.2); gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.6); osc.start(); osc.stop(audioCtx.currentTime + 0.6); }
     }
 
-    // --- الترتيب التصاعدي ---
     const rankOrder = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
     function sortMyHand() {
         myHand.sort((a,b) => rankOrder.indexOf(a) - rankOrder.indexOf(b));
     }
 
-    // --- التوكن والمتغيرات الأساسية ---
     let myToken = localStorage.getItem('kaddab_token') || Math.random().toString(36).substr(2);
     localStorage.setItem('kaddab_token', myToken);
     
@@ -181,7 +170,6 @@
 
     window.onbeforeunload = function() { if(isHost && gameState.gameStarted) return "إذا خرجت ستنتهي اللعبة للجميع!"; };
 
-    // --- الاتصال (الاستقبال) ---
     function setupConn(c) {
         c.on('data', data => {
             if(data.type === 'HELLO_HOST') {
@@ -192,7 +180,7 @@
                 } else { c.playerName = data.name; c.playerToken = data.token; connections.push(c); updatePeerCount(); c.send({ type: 'HELLO_CLIENT' }); }
             }
             else if (data.type === 'HELLO_CLIENT') document.getElementById('initial-setup').innerHTML = `<h2 style='color:var(--gold)'>تم الاتصال! ✅</h2><p>انتظر المضيف يوزع الورق...</p>`;
-            else if (data.type === 'REJECTED') { showModal("مغلقة 🔒", "العب بدأت بالفعل", "error"); if(peer) peer.destroy(); }
+            else if (data.type === 'REJECTED') { showModal("مغلقة 🔒", "العبة بدأت بالفعل", "error"); if(peer) peer.destroy(); }
             else if (data.type === 'START' || data.type === 'RECONNECT') {
                 document.getElementById('lobby').style.display = 'none';
                 myHand = data.hand; gameState = data.state; myIndex = data.yourIndex; sortMyHand(); render();
@@ -220,7 +208,8 @@
         connections.forEach(c => playersArr.push({ name: c.playerName, token: c.playerToken, conn: c })); playersArr.sort(() => Math.random() - 0.5);
         gameState.players = playersArr.map((p, i) => ({ index: i, name: p.name, token: p.token, cardCount: 0 }));
         
-        let deck = []; ranks.forEach(r => { for(let i=0; i<8; i++) deck.push(r); }); deck.sort(() => Math.random() - 0.5);
+        // التصحيح المهم هنا: استخدام rankOrder بدلاً من ranks
+        let deck = []; rankOrder.forEach(r => { for(let i=0; i<8; i++) deck.push(r); }); deck.sort(() => Math.random() - 0.5);
         let hands = Array.from({length: playersArr.length}, () => []);
         let pIdx = 0; while(deck.length > 0) { hands[pIdx % playersArr.length].push(deck.pop()); pIdx++; }
         playersArr.forEach((p, i) => gameState.players[i].cardCount = hands[i].length);
@@ -229,14 +218,11 @@
         document.getElementById('lobby').style.display = 'none'; render();
     }
 
-    // --- فحص الفوز ---
     function checkWin() {
-        // يعتبر فائز إذا كان عدد أوراقه 0، ودوره انتهى بسلام (محد كذبه بنجاح)
         let winnerPlayer = gameState.players.find(p => p.cardCount === 0 && gameState.lastPlayer !== p.index);
         if(winnerPlayer) gameState.winner = winnerPlayer.name;
     }
 
-    // --- آليات اللعب ---
     function playCards() {
         if(gameState.currentPlayer !== myIndex) return showModal("تنبيه", "مب دورك يا بطل!", "error");
         if(selected.length === 0) return showModal("تنبيه", "اختر ورقة على الأقل عشان تنزلها!", "error");
@@ -251,7 +237,7 @@
         gameState.players[myIndex].cardCount -= played.length;
         gameState.pot.push(...played);
         gameState.lastPlayer = myIndex;
-        gameState.lastPlayCount = played.length; // حفظ عدد الأوراق الملعوبة لتسهيل التكذيب
+        gameState.lastPlayCount = played.length; 
         
         let nextPlayerName = gameState.players[(myIndex + 1) % gameState.players.length].name;
         gameState.actionLog = `🃏 ${myName} نزل [${played.length}] أوراق على أنها (${gameState.currentClaim}) ➡️ الدور عند ${nextPlayerName}`;
@@ -283,19 +269,18 @@
         if(gameState.pot.length === 0 || gameState.lastPlayer === -1 || gameState.lastPlayer === myIndex) return;
         playSound('bluff');
         
-        // يفحص فقط آخر دفعة أوراق تم رميها (وليس كل الكومة)
         let lastPlayedCards = gameState.pot.slice(-gameState.lastPlayCount);
         let isLying = lastPlayedCards.some(c => c !== gameState.currentClaim);
         
         let targetIndex;
         if(isLying) {
-            targetIndex = gameState.lastPlayer; // الكذاب ياخذ الورق
-            gameState.currentPlayer = myIndex; // اللي كشفه يبدأ من جديد
+            targetIndex = gameState.lastPlayer; 
+            gameState.currentPlayer = myIndex; 
             gameState.actionLog = `💥 ${myName} كشف كذبة ${gameState.players[targetIndex].name} بنجاح! الدور يرجع لـ ${myName}.`;
             showModal("قفطته! 🕵️‍♂️", `طلع كذاب! 🤥 ${gameState.players[targetIndex].name} سيسحب كل الكومة.`, "success");
         } else {
-            targetIndex = myIndex; // المظلوم يكمل واللي شك فيه ياخذ الورق
-            gameState.currentPlayer = gameState.lastPlayer; // الصادق هو اللي يكمل
+            targetIndex = myIndex; 
+            gameState.currentPlayer = gameState.lastPlayer; 
             gameState.actionLog = `🤦‍♂️ ${myName} ظلم ${gameState.players[gameState.lastPlayer].name}.. ${myName} بياكل الورق والصادق يكمل!`;
             showModal("أوبس! 🤦‍♂️", `طلع صادق! 😇 أنت بتاخذ كل الكومة والدور يرجع له لأنه صادق.`, "error");
         }
@@ -344,7 +329,6 @@
             status.innerText = "🔥 دورك! اختر ونزل الورق 🔥"; status.style.color = "#00ff00";
         } else { status.innerText = `⏳ بانتظار ${gameState.players[gameState.currentPlayer]?.name} ⏳`; status.style.color = "white"; }
 
-        // إخفاء/إظهار اختيار الرقم بناءً على الصلاحية
         const claimSelect = document.getElementById('claim-val');
         if(!gameState.currentClaim && gameState.currentPlayer === myIndex) { claimSelect.style.display = "inline-block"; } 
         else { claimSelect.style.display = "none"; }
@@ -352,11 +336,10 @@
         if(gameState.currentClaim) { document.getElementById('claim-msg').innerText = `المطلوب: ${gameState.currentClaim}`; document.getElementById('claim-msg').style.display = "block"; } 
         else { document.getElementById('claim-msg').style.display = "none"; }
         
-        // تعطيل الأزرار بشكل ذكي
         const bluffBtn = document.getElementById('btn-bluff');
         const passBtn = document.getElementById('btn-pass');
         bluffBtn.disabled = (gameState.pot.length === 0 || gameState.lastPlayer === -1 || gameState.lastPlayer === myIndex);
-        passBtn.disabled = (gameState.pot.length === 0 || gameState.lastPlayer === -1); // التمرير ممنوع على الطاولة الفاضية
+        passBtn.disabled = (gameState.pot.length === 0 || gameState.lastPlayer === -1); 
 
         document.getElementById('pot-count-badge').innerText = `الكومة: ${gameState.pot.length} بطاقة`;
         
