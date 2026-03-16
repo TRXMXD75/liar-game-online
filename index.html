@@ -3,40 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>كذاب Pro - أونلاين</title>
+    <title>كذاب Pro - أونلاين v3.0</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         :root { --poker-green: #1a4a1a; --gold: #ffd700; --accent: #ff4444; }
-        body { font-family: 'Cairo', sans-serif; background: #0f2027; color: white; margin: 0; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
-        #lobby { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; display: flex; align-items: center; justify-content: center; }
-        .setup-box { background: var(--poker-green); padding: 30px; border-radius: 20px; border: 3px solid var(--gold); text-align: center; max-width: 90%; }
-        .table { width: 85vw; height: 40vh; background: radial-gradient(#2d5a27, #132a13); border: 10px solid #3d2b1f; border-radius: 150px; position: relative; display: flex; align-items: center; justify-content: center; margin: 20px auto; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #0f2027; color: white; margin: 0; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+        #lobby { position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 2000; display: flex; align-items: center; justify-content: center; }
+        .setup-box { background: var(--poker-green); padding: 30px; border-radius: 20px; border: 3px solid var(--gold); text-align: center; max-width: 90%; width: 400px; }
+        .table { width: 85vw; height: 40vh; background: radial-gradient(#2d5a27, #132a13); border: 10px solid #3d2b1f; border-radius: 150px; position: relative; display: flex; align-items: center; justify-content: center; margin: 20px auto; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
         .hand { height: 160px; display: flex; justify-content: center; padding: 10px; background: rgba(0,0,0,0.4); overflow-x: auto; gap: 5px; }
-        .card { width: 60px; height: 90px; background: white; border-radius: 8px; color: black; transition: 0.3s; border: 1px solid #999; display: flex; flex-direction: column; justify-content: space-between; padding: 5px; font-weight: bold; cursor: pointer; flex-shrink: 0; }
-        .card.selected { transform: translateY(-30px); border: 3px solid var(--gold); box-shadow: 0 0 10px var(--gold); }
+        .card { width: 60px; height: 90px; background: white; border-radius: 8px; color: black; transition: 0.3s; border: 2px solid #555; display: flex; flex-direction: column; justify-content: space-between; padding: 5px; font-weight: bold; cursor: pointer; flex-shrink: 0; user-select: none; }
+        .card.selected { transform: translateY(-30px); border: 3px solid var(--gold); box-shadow: 0 0 15px var(--gold); }
         .pot-card { position: absolute; width: 50px; height: 75px; background: #333; border: 1px solid #555; border-radius: 5px; transform: rotate(var(--r)); }
         .controls { padding: 15px; background: #000; display: flex; justify-content: center; gap: 10px; align-items: center; }
-        button { padding: 10px 20px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; }
+        button { padding: 10px 20px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        button:active { transform: scale(0.95); }
         .btn-gold { background: var(--gold); color: black; }
         .btn-red { background: var(--accent); color: white; }
-        input { padding: 10px; border-radius: 5px; border: none; width: 150px; text-align: center; font-weight: bold; }
+        input { padding: 10px; border-radius: 5px; border: none; width: 80%; text-align: center; font-weight: bold; font-size: 1.2rem; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
     <div id="lobby">
         <div class="setup-box" id="initial-setup">
-            <h1>كذاب Pro أونلاين 🌐</h1>
-            <button class="btn-gold" onclick="startHost()">إنشاء غرفة (Host)</button>
-            <p>أو</p>
-            <input type="text" id="join-id" placeholder="كود الغرفة">
-            <button class="btn-gold" onclick="joinRoom()">دخول</button>
+            <h1>كذاب Pro 🌐</h1>
+            <p style="color:#aaa; font-size: 0.8rem;">الإصدار 3.0 (تأكيد الاتصال)</p>
+            <br>
+            <button class="btn-gold" style="width: 100%; font-size: 1.2rem;" onclick="startHost()">إنشاء غرفة (Host)</button>
+            <hr style="margin: 20px 0; border-color: #444;">
+            <input type="text" id="join-id" placeholder="الصق كود الغرفة هنا">
+            <button class="btn-gold" style="width: 100%; font-size: 1.2rem;" onclick="joinRoom()">دخول الغرفة</button>
         </div>
+        
         <div class="setup-box" id="waiting-area" style="display:none;">
-            <h2>كود الغرفة: <br><span id="room-code" style="color:var(--gold); user-select: all; font-size: 1.5rem;">...</span></h2>
-            <p>شارك الكود مع أصحابك</p>
-            <p>المتصلون الآن: <span id="peer-count">1</span></p>
-            <button class="btn-gold" id="start-game-btn" onclick="broadcastStart()" style="display:none;">ابدأ اللعب!</button>
+            <h2>كود غرفتك:</h2>
+            <div style="background: black; padding: 10px; border-radius: 10px; color: var(--gold); font-size: 1.5rem; user-select: all; margin-bottom: 15px; word-break: break-all;" id="room-code">...</div>
+            <p>أرسل هذا الكود لأصدقائك</p>
+            <p style="font-size: 1.2rem;">المتصلون معك الآن: <strong id="peer-count" style="color:var(--gold)">1</strong></p>
+            <br>
+            <button class="btn-gold" id="start-game-btn" onclick="broadcastStart()" style="display:none; width: 100%; font-size: 1.2rem;">توزيع الورق وبدء اللعب!</button>
         </div>
     </div>
 
@@ -44,33 +50,66 @@
 
     <div class="table">
         <div id="pot-container"></div>
-        <div id="claim-msg" style="position:absolute; top: -30px; background: var(--gold); color: black; padding: 5px 15px; border-radius: 10px; display: none;"></div>
+        <div id="claim-msg" style="position:absolute; top: -30px; background: var(--gold); color: black; padding: 5px 15px; border-radius: 10px; display: none; font-weight: bold;"></div>
     </div>
 
     <div class="hand" id="my-hand"></div>
 
     <div class="controls">
-        <select id="claim-val" style="padding:10px; border-radius:5px; font-weight: bold;">
+        <select id="claim-val" style="padding:10px; border-radius:5px; font-weight: bold; font-size: 1.1rem;">
             <option value="A">A</option><option value="2">2</option><option value="3">3</option>
-            <option value="4">4</option><option value="5">5</option><option value="J">J</option>
-            <option value="Q">Q</option><option value="K">K</option>
+            <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+            <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+            <option value="10">10</option><option value="J">J</option><option value="Q">Q</option><option value="K">K</option>
         </select>
-        <button class="btn-gold" onclick="playCards()">رمي الورق</button>
-        <button class="btn-red" onclick="callBluff()">كذاب!</button>
+        <button class="btn-gold" onclick="playCards()">تنزيل الورق</button>
+        <button class="btn-red" onclick="callBluff()">كــــذاب!</button>
     </div>
 
 <script>
     let peer, conn, myId, connections = [];
-    let gameState = { players: [], currentPlayer: 0, pot: [], currentClaim: "", lastPlayer: -1, gameStarted: false };
-    let isHost = false;
-    let myHand = [];
-    let selected = [];
-    let myIndex = 0;
+    let gameState = { players: [], currentPlayer: 0, pot: [], currentClaim: "", lastPlayer: -1 };
+    let isHost = false, myHand = [], selected = [], myIndex = 0;
 
-    // --- الاتصال المعدّل ---
+    // --- هندسة الاتصال (نظام المصافحة) ---
+    function setupConn(c) {
+        c.on('data', data => {
+            // 1. نظام المصافحة (Handshake)
+            if(data.type === 'HELLO_HOST') {
+                // المضيف يستقبل طلب الضيف ويرد عليه
+                connections.push(c);
+                document.getElementById('peer-count').innerText = connections.length + 1;
+                c.send({ type: 'HELLO_CLIENT' });
+            }
+            else if (data.type === 'HELLO_CLIENT') {
+                // الضيف يستقبل رد المضيف (الآن فقط نثق بالاتصال)
+                document.getElementById('initial-setup').innerHTML = `
+                    <h2 style='color:var(--gold)'>تم ربط الاتصال بنجاح! ✅</h2>
+                    <p>أنت الآن داخل الغرفة. انتظر المضيف ليقوم بتوزيع الورق...</p>
+                `;
+            }
+            
+            // 2. نظام اللعب
+            else if(data.type === 'START') {
+                document.getElementById('lobby').style.display = 'none';
+                myHand = data.hand;
+                gameState = data.state;
+                myIndex = data.yourIndex;
+                render();
+            }
+            else if(data.type === 'UPDATE') {
+                gameState = data.state;
+                if(isHost) { // السيرفر (المضيف) يوزع الحركة للبقية
+                    connections.forEach(cli => cli.send({ type: 'UPDATE', state: gameState }));
+                }
+                render();
+            }
+        });
+    }
+
     function startHost() {
         isHost = true;
-        document.getElementById('initial-setup').innerHTML = "<h2>جاري إنشاء الغرفة... ⏳</h2>";
+        document.getElementById('initial-setup').innerHTML = "<h2>جاري تجهيز السيرفر... ⏳</h2>";
         peer = new Peer();
         
         peer.on('open', id => {
@@ -81,56 +120,36 @@
             document.getElementById('start-game-btn').style.display = 'inline-block';
         });
 
-        peer.on('connection', c => {
-            // التعديل الأهم: المضيف لن يسجل اللاعب إلا إذا فتح الخط تماماً
-            c.on('open', () => {
-                connections.push(c);
-                document.getElementById('peer-count').innerText = connections.length + 1;
-                setupConn(c);
-            });
-        });
+        // عندما يتصل شخص ما بالمضيف
+        peer.on('connection', c => setupConn(c));
     }
 
     function joinRoom() {
-        const hostId = document.getElementById('join-id').value;
-        if(!hostId) return alert("أدخل الكود!");
+        const hostId = document.getElementById('join-id').value.trim();
+        if(!hostId) return alert("أرجوك أدخل الكود أولاً!");
         
-        document.getElementById('initial-setup').innerHTML = "<h2>جاري الاتصال بالمضيف... ⏳</h2>";
+        document.getElementById('initial-setup').innerHTML = "<h2>جاري البحث عن الغرفة... ⏳</h2>";
         
         peer = new Peer();
         peer.on('open', id => {
             myId = id;
-            conn = peer.connect(hostId);
+            conn = peer.connect(hostId, { reliable: true });
+            setupConn(conn);
             
-            // التعديل الأهم: اللاعب لن يرى رسالة "تم الاتصال" إلا إذا فتح الخط تماماً
+            // بمجرد فتح القناة، نرسل للمضيف "مرحباً، هل أنت موجود؟"
             conn.on('open', () => {
-                setupConn(conn);
-                document.getElementById('initial-setup').innerHTML = "<h2 style='color:var(--gold)'>تم الاتصال بنجاح! ✅<br><br><span style='font-size:1rem; color:white'>انتظر المضيف يضغط ابدأ...</span></h2>";
-            });
-            
-            conn.on('error', err => {
-                alert("فشل الاتصال، تأكد من الكود!");
-                location.reload();
+                conn.send({ type: 'HELLO_HOST' });
             });
         });
-    }
 
-    function setupConn(c) {
-        c.on('data', data => {
-            if(data.type === 'START') {
-                document.getElementById('lobby').style.display = 'none';
-                myHand = data.hand;
-                gameState = data.state;
-                myIndex = data.yourIndex;
-                render();
+        // اصطياد الأخطاء الوهمية
+        peer.on('error', err => {
+            if(err.type === 'peer-unavailable') {
+                alert("الكود خاطئ أو المضيف لم يفتح الغرفة!");
+            } else {
+                alert("حدث خطأ في الشبكة: " + err.type);
             }
-            if(data.type === 'UPDATE') {
-                gameState = data.state;
-                if(isHost) {
-                    connections.forEach(cli => cli.send({ type: 'UPDATE', state: gameState }));
-                }
-                render();
-            }
+            location.reload();
         });
     }
 
@@ -138,30 +157,31 @@
     function broadcastStart() {
         if(!isHost) return;
         let deck = [];
-        const deckRanks = ['A','2','3','4','5','J','Q','K'];
-        deckRanks.forEach(r => { for(let i=0; i<4; i++) deck.push(r); });
-        deck.sort(() => Math.random() - 0.5);
+        const deckRanks = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+        // توزيع ورق حقيقي (مجموعتين)
+        deckRanks.forEach(r => { for(let i=0; i<8; i++) deck.push(r); });
+        deck.sort(() => Math.random() - 0.5); // خلط الورق
         
         let totalPlayers = connections.length + 1;
         gameState.players = Array.from({length: totalPlayers}, (_, i) => i);
-        gameState.gameStarted = true;
+        
+        // حساب ورق كل لاعب
+        let cardsPerPlayer = Math.floor(deck.length / totalPlayers);
 
         connections.forEach((c, i) => {
-            let playerHand = [];
-            for(let j=0; j<4; j++) playerHand.push(deck.pop());
+            let playerHand = deck.splice(0, cardsPerPlayer);
             c.send({ type: 'START', hand: playerHand, state: gameState, yourIndex: i + 1 });
         });
         
-        myHand = [];
-        for(let j=0; j<4; j++) myHand.push(deck.pop());
+        myHand = deck.splice(0, cardsPerPlayer);
         myIndex = 0;
         document.getElementById('lobby').style.display = 'none';
         render();
     }
 
     function playCards() {
-        if(gameState.currentPlayer !== myIndex) return alert("مش دورك!");
-        if(selected.length === 0) return alert("اختر ورق!");
+        if(gameState.currentPlayer !== myIndex) return alert("انتظر دورك يا صديقي!");
+        if(selected.length === 0) return alert("يجب اختيار ورقة واحدة على الأقل!");
 
         let claim = document.getElementById('claim-val').value;
         if(!gameState.currentClaim) gameState.currentClaim = claim;
@@ -180,8 +200,9 @@
     function callBluff() {
         if(gameState.pot.length === 0 || gameState.lastPlayer === myIndex) return;
         
-        let isLying = gameState.pot[gameState.pot.length - 1] !== gameState.currentClaim;
-        alert(isLying ? "قفطته! هو كذاب" : "ظلمته! هو صادق");
+        let isLying = gameState.pot.slice(-1)[0] !== gameState.currentClaim;
+        
+        alert(isLying ? "قفطته! طلع كذاب 🤥" : "ظلمته! طلع صادق 😇");
         
         gameState.pot = [];
         gameState.currentClaim = "";
@@ -190,11 +211,8 @@
 
     function syncData() {
         const data = { type: 'UPDATE', state: gameState };
-        if(isHost) {
-            connections.forEach(c => c.send(data));
-        } else {
-            conn.send(data);
-        }
+        if(isHost) connections.forEach(c => c.send(data));
+        else conn.send(data);
         render();
     }
 
@@ -215,16 +233,16 @@
 
         const status = document.getElementById('status-bar');
         if(gameState.currentPlayer === myIndex) {
-            status.innerText = "دورك! ارمِ الورق";
+            status.innerText = "دورك! اختر الورق واضغط تنزيل";
             status.style.color = "#00ff00";
         } else {
-            status.innerText = `انتظر دور لاعب ${gameState.currentPlayer + 1}`;
+            status.innerText = `انتظر دور لاعب رقم ${gameState.currentPlayer + 1} ...`;
             status.style.color = "white";
         }
 
         const claimMsg = document.getElementById('claim-msg');
         if(gameState.currentClaim) {
-            claimMsg.innerText = `المطلوب: ${gameState.currentClaim}`;
+            claimMsg.innerText = `المطلوب رميه: ${gameState.currentClaim}`;
             claimMsg.style.display = "block";
         } else {
             claimMsg.style.display = "none";
@@ -235,7 +253,7 @@
         gameState.pot.forEach((_, i) => {
             const p = document.createElement('div');
             p.className = 'pot-card';
-            p.style.setProperty('--r', `${i * 15}deg`);
+            p.style.setProperty('--r', `${i * 12}deg`);
             potCont.appendChild(p);
         });
     }
