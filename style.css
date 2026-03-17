@@ -69,23 +69,31 @@ button:disabled { filter: grayscale(100%) opacity(0.4); cursor: not-allowed; tra
 .status-bluff { background: var(--accent-red); color: white; }
 .status-caught { background: #550000; color: white; border: 1px solid #ff4444; }
 
-/* السكرول الطولي وتوزيع البطاقات الذكي */
-.hand-container { height: 35vh; width: 100%; background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.4)); border-top: 4px solid var(--wood-light); display: flex; flex-direction: column; z-index: 100; box-shadow: 0 -10px 30px rgba(0,0,0,0.8); padding-bottom: 5px; }
+/* --- منطقة اليد والتحكم بالتصميم الجديد --- */
+.hand-container { 
+    height: 40vh; /* أعطينا مساحة كافية للورق */
+    width: 100%; 
+    background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.4)); 
+    border-top: 4px solid var(--wood-light); 
+    display: flex; 
+    flex-direction: column; 
+    z-index: 100; 
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.8); 
+    position: relative;
+}
 
-/* - Wrap: يسمح بنزول البطاقات لسطر جديد.
-   - max-width: 680px: يضمن أن السطر الواحد يأخذ حوالي 16 بطاقة فقط (بسبب التداخل).
-*/
+/* السكرول الطولي وتغليف البطاقات الريسبونسيف */
 .hand { 
     display: flex; 
-    flex-wrap: wrap; 
-    overflow-y: auto; 
+    flex-wrap: wrap; /* السماح بنزول البطاقات لسطر جديد */
+    overflow-y: auto; /* سكرول عمودي */
     overflow-x: hidden; 
     justify-content: center; 
     align-content: flex-start;
-    padding: 30px 20px; 
-    gap: 15px 0; /* مسافة عمودية بين الأسطر 15px، وصفر أفقياً للتشابك */
-    flex: 1; 
-    max-width: 700px; /* السر لضبط عدد البطاقات في السطر */
+    /* مساحة سفلية كبيرة جداً (90px) لضمان عدم اختفاء البطاقات خلف الأزرار الثابتة */
+    padding: 30px 20px 90px 20px; 
+    gap: 15px 0; 
+    width: 100%; /* ياخذ العرض كامل ريسبونسف */
     margin: 0 auto; 
 }
 
@@ -94,7 +102,6 @@ button:disabled { filter: grayscale(100%) opacity(0.4); cursor: not-allowed; tra
 .hand::-webkit-scrollbar-track { background: rgba(0,0,0,0.4); border-radius: 10px; margin: 10px 0; }
 .hand::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #b8860b, var(--gold-primary), #b8860b); border-radius: 10px; border: 1px solid #fff; }
 
-/* تصميم البطاقة مع التباعد الذكي (Hover) */
 .card { 
     width: 65px; 
     height: 95px; 
@@ -112,15 +119,15 @@ button:disabled { filter: grayscale(100%) opacity(0.4); cursor: not-allowed; tra
     font-size: 1.4rem; 
     font-family: Arial; 
     flex-shrink: 0; 
-    margin-right: -25px; /* تداخل البطاقات (بما أننا RTL، نستخدم margin-right) */
+    margin-right: -25px; /* تداخل البطاقات */
     box-shadow: -4px 4px 10px rgba(0,0,0,0.5); 
     position: relative; 
 }
 .card:first-child { margin-right: 0; }
 
-/* تأثير التباعد عند التأشير (Hover Effect الخرافي) */
+/* تأثير التباعد عند التأشير */
 .card:hover, .card.selected { 
-    margin-left: 20px; /* يدفع البطاقة اللي يسارها عشان توضح */
+    margin-left: 20px; 
     transform: translateY(-20px) scale(1.1); 
     z-index: 50; 
     box-shadow: -8px 15px 25px rgba(0,0,0,0.7); 
@@ -133,7 +140,23 @@ button:disabled { filter: grayscale(100%) opacity(0.4); cursor: not-allowed; tra
     z-index: 60; 
 }
 
-.controls { padding: 10px 15px; background: #050a0e; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; border-top: 1px solid #222; }
+/* --- الأزرار الثابتة (لا تتأثر بالزوم) --- */
+.controls { 
+    position: fixed; /* ثابتة أسفل الشاشة */
+    bottom: 0; 
+    left: 0; 
+    width: 100%; 
+    padding: 12px 15px; 
+    background: rgba(5, 10, 14, 0.95); 
+    backdrop-filter: blur(10px);
+    display: flex; 
+    justify-content: center; 
+    gap: 15px; 
+    flex-wrap: wrap; 
+    border-top: 2px solid var(--gold-primary); 
+    z-index: 1000; /* دائمًا فوق كل شيء */
+    box-shadow: 0 -5px 25px rgba(0,0,0,0.9);
+}
 
 .action-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 5000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
 .action-text { font-size: 4rem; font-weight: 900; color: white; text-align: center; text-shadow: 0 10px 30px rgba(0,0,0,0.9); transform: scale(0.1); opacity: 0; line-height: 1.2; animation: smashIn 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
@@ -142,6 +165,7 @@ button:disabled { filter: grayscale(100%) opacity(0.4); cursor: not-allowed; tra
 @media (max-width: 768px) {
     .poker-table { border-width: 12px; height: 180px; width: 95vw; }
     .card { width: 55px; height: 80px; font-size: 1.2rem; margin-right: -20px; }
+    .controls { padding: 10px 5px; gap: 8px; }
     button { padding: 10px 15px; font-size: 1rem; }
     .claim-hologram { font-size: 1.2rem; padding: 5px 20px; }
     .action-text { font-size: 3rem; }
