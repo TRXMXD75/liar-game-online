@@ -6,7 +6,6 @@ function showModal(title, msg, type = "info") {
 }
 function closeModal() { document.getElementById('custom-modal').style.display = 'none'; }
 
-// قائمة الأرقام: A في النهاية
 const selectOrder = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
 function buildClaimGrid() {
     const grid = document.getElementById('claim-grid'); grid.innerHTML = '';
@@ -55,8 +54,9 @@ function generateShortCode() {
 
 let myToken; try { myToken = sessionStorage.getItem('kaddab_token'); if(!myToken) { myToken = Math.random().toString(36).substr(2); sessionStorage.setItem('kaddab_token', myToken); } } catch(e) { myToken = Math.random().toString(36).substr(2); }
 
+// تمت إضافة roundPotCount لتتبع الجولة الحالية
 let peer, conn, connections = [];
-let gameState = { players: [], currentPlayer: 0, pot: [], currentClaim: "", lastPlayer: -1, lastPlayCount: 0, actionLog: "", winner: null, bluffEventId: 0, gameStarted: false };
+let gameState = { players: [], currentPlayer: 0, pot: [], currentClaim: "", lastPlayer: -1, lastPlayCount: 0, actionLog: "", winner: null, bluffEventId: 0, gameStarted: false, roundPotCount: 0 };
 let hostHandBackup = {}; let isHost = false, myHand = [], selected = [], myIndex = 0, myName = ""; let processedBluffIds = []; let lobbyPlayers = [];
 
 function getPlayerName() { return document.getElementById('player-name').value.trim() || `لاعب ${Math.floor(Math.random() * 100)}`; }
@@ -142,7 +142,7 @@ function broadcastStart() {
     let hands = Array.from({length: playersArr.length}, () => []); let pIdx = 0; while(deck.length > 0) { hands[pIdx % playersArr.length].push(deck.pop()); pIdx++; }
     playersArr.forEach((p, i) => gameState.players[i].cardCount = hands[i].length);
 
-    gameState.pot = []; gameState.currentClaim = ""; gameState.lastPlayer = -1; gameState.actionLog = "بدأت اللعبة! 🃏"; gameState.winner = null;
+    gameState.pot = []; gameState.currentClaim = ""; gameState.lastPlayer = -1; gameState.actionLog = "بدأت اللعبة! 🃏"; gameState.winner = null; gameState.roundPotCount = 0;
     playersArr.forEach((p, i) => { hostHandBackup[p.token] = hands[i]; if(p.conn) { try { p.conn.send({ type: 'START', hand: hands[i], state: gameState, yourIndex: i }); } catch(e){} } else { myHand = hands[i]; myIndex = i; sortMyHand(); } });
     
     document.getElementById('lobby').style.display = 'none'; document.getElementById('table-area').style.display = 'flex'; document.getElementById('hand-container').style.display = 'flex'; document.getElementById('status-bar').style.display = 'block'; document.getElementById('action-log').style.display = 'block'; document.getElementById('win-modal').style.display = 'none';
@@ -168,12 +168,18 @@ function initiatePlay() {
 
 function finalizePlay(claimRank) {
     closeClaimModal();
-    if(!gameState.currentClaim) gameState.currentClaim = claimRank;
+    if(!gameState.currentClaim) {
+        gameState.currentClaim = claimRank;
+        gameState.roundPotCount = selected.length;
+    } else {
+        gameState.roundPotCount += selected.length;
+    }
+
     playSound('play');
     let played = []; selected.sort((a,b)=>b-a).forEach(idx => played.push(myHand.splice(idx, 1)[0]));
     
     gameState.players[myIndex].cardCount -= played.length;
-    gameState.players[myIndex].lastAction = { text: "نزل ورق", type: "play" };
+    gameState.players[myIndex].lastAction = { text: "نزل " + played.length + " 🎴", type: "play" };
     gameState.pot.push(...played); gameState.lastPlayer = myIndex; gameState.lastPlayCount = played.length; 
     let nextPlayerName = gameState.players[(myIndex + 1) % gameState.players.length].name;
     gameState.actionLog = `🃏 ${myName} نزل [${played.length}] أوراق على أنها (${gameState.currentClaim}) ➡️ الدور عند ${nextPlayerName}`;
@@ -186,9 +192,12 @@ function passTurn() {
     if(gameState.currentPlayer !== myIndex) return;
     if(gameState.lastPlayer === -1 || gameState.pot.length === 0) return showModal("تنبيه", "الطاولة فاضية، ما تقدر تسوي Pass!", "error");
     let nextPlayerName = gameState.players[(myIndex + 1) % gameState.players.length].name;
-    gameState.actionLog = `💨 ${myName} سوّى PASS ➡️ الدور عند ${nextPlayerName} يختار رقم جديد!`;
+    gameState.actionLog = `💨 ${myName} سوّى PASS ➡️ الدور عند ${nextPlayerName}`;
     gameState.players[myIndex].lastAction = { text: "Pass 💨", type: "pass" };
-    gameState.currentClaim = ""; gameState.lastPlayer = -1; clearNextPlayerAction();
+    
+    gameState.currentClaim = ""; gameState.lastPlayer = -1; gameState.roundPotCount = 0;
+    
+    clearNextPlayerAction();
     gameState.currentPlayer = (gameState.currentPlayer + 1) % gameState.players.length; selected = []; closeClaimModal();
     sendBigEventToAll(`💨 ${myName}\nسوّى PASS!`, '#00f3ff', 'big_pass');
     checkWin(); syncData();
@@ -205,7 +214,9 @@ function callBluff() {
         else { gameState.currentPlayer = gameState.lastPlayer; gameState.players[gameState.lastPlayer].lastAction = { text: "صادق 😇", type: "play" }; gameState.actionLog = `🤦‍♂️ ${myName} ظلم ${gameState.players[gameState.lastPlayer].name} والصادق يكمل!`; }
         gameState.players.forEach(p => { if(p.index !== myIndex && p.index !== gameState.lastPlayer) p.lastAction = null; });
         gameState.bluffEventId = Math.random(); gameState.potToGive = { target: targetIndex, cards: [...gameState.pot] }; gameState.players[targetIndex].cardCount += gameState.pot.length;
-        gameState.pot = []; gameState.currentClaim = ""; gameState.lastPlayer = -1;
+        
+        gameState.pot = []; gameState.currentClaim = ""; gameState.lastPlayer = -1; gameState.roundPotCount = 0;
+        
         if(targetIndex === myIndex) { myHand.push(...gameState.potToGive.cards); sortMyHand(); processedBluffIds.push(gameState.bluffEventId); try { if(!isHost) conn.send({ type: 'BACKUP_HAND', token: myToken, hand: myHand }); else hostHandBackup[myToken] = myHand; } catch(e){} }
         closeClaimModal(); checkWin(); syncData();
     }, 1200); 
@@ -230,6 +241,7 @@ function render() {
     }
 
     document.getElementById('action-log').innerText = gameState.actionLog || "بانتظار الحركة الأولى...";
+    document.getElementById('my-count-val').innerText = myHand.length;
 
     const handEl = document.getElementById('my-hand'); handEl.innerHTML = '';
     myHand.forEach((card, idx) => {
@@ -255,7 +267,17 @@ function render() {
     bluffBtn.disabled = (gameState.pot.length === 0 || gameState.lastPlayer === -1 || gameState.lastPlayer === myIndex);
     passBtn.disabled = (gameState.pot.length === 0 || gameState.lastPlayer === -1); 
 
-    document.getElementById('pot-count-badge').innerText = `الكومة: ${gameState.pot.length} بطاقة`;
+    // تفصيل الكومة
+    let basePot = gameState.pot.length - gameState.roundPotCount;
+    if (gameState.currentClaim && gameState.roundPotCount > 0) {
+        if (basePot > 0) {
+            document.getElementById('pot-count-badge').innerText = `الكومة: ${basePot} + ${gameState.roundPotCount}`;
+        } else {
+            document.getElementById('pot-count-badge').innerText = `الكومة: ${gameState.roundPotCount}`;
+        }
+    } else {
+        document.getElementById('pot-count-badge').innerText = `الكومة: ${gameState.pot.length}`;
+    }
     
     const potCont = document.getElementById('pot-container'); potCont.innerHTML = '';
     gameState.pot.forEach((_, i) => { const p = document.createElement('div'); p.className = 'pot-card'; p.style.setProperty('--r', `${(i * 17) % 360}deg`); potCont.appendChild(p); });

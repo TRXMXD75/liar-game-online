@@ -47,13 +47,13 @@ button:disabled { filter: grayscale(100%) opacity(0.4); cursor: not-allowed; tra
 #action-log { width: 100%; text-align: center; padding: 10px; color: #fff; font-size: 1.1rem; background: linear-gradient(90deg, transparent, rgba(255, 42, 42, 0.5), transparent); border-bottom: 2px solid var(--accent-red); font-weight: 900; text-shadow: 1px 1px 2px black; z-index: 100; display: none; }
 #status-bar { width: 100%; text-align: center; padding: 12px; color: var(--gold-primary); font-size: 1.3rem; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); font-weight: 900; border-bottom: 1px solid #444; z-index: 100; text-shadow: 0 2px 5px black; display: none; transition: 0.3s; }
 
-/* الطاولة */
 .table-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; width: 100%; padding: 10px; }
 .poker-table { width: 85vw; max-width: 650px; height: 230px; background: radial-gradient(ellipse at center, var(--table-green), var(--table-dark)); border: 20px solid var(--wood-light); border-radius: 150px; box-shadow: inset 0 0 40px rgba(0,0,0,0.9), 0 20px 40px rgba(0,0,0,0.6), 0 0 0 6px var(--wood-dark); position: relative; display: flex; align-items: center; justify-content: center; }
 
 .claim-hologram { background: rgba(0,0,0,0.8); border: 2px solid var(--gold-primary); color: white; padding: 8px 30px; border-radius: 30px; font-weight: 900; font-size: 1.5rem; box-shadow: 0 0 15px var(--gold-glow); }
 .claim-hologram span { color: var(--gold-primary); font-size: 2rem; margin-right: 10px; }
-.pot-count-badge { background: #111; color: var(--gold-primary); padding: 8px 25px; border-radius: 20px; font-size: 1.2rem; border: 2px solid var(--gold-primary); font-weight: 900; box-shadow: 0 5px 15px rgba(0,0,0,0.8); }
+
+.pot-count-badge { background: #111; color: var(--gold-primary); padding: 8px 25px; border-radius: 20px; font-size: 1.2rem; border: 2px solid var(--gold-primary); font-weight: 900; box-shadow: 0 5px 15px rgba(0,0,0,0.8); direction: ltr; }
 
 .pot-container { position: relative; width: 60px; height: 85px; z-index: 40; }
 .pot-card { position: absolute; width: 50px; height: 75px; background: repeating-linear-gradient(45deg, #111, #111 10px, #2a2a2a 10px, #2a2a2a 20px); border: 2px solid #555; border-radius: 6px; transform: rotate(var(--r)); box-shadow: 2px 2px 12px rgba(0,0,0,0.7); }
@@ -63,100 +63,28 @@ button:disabled { filter: grayscale(100%) opacity(0.4); cursor: not-allowed; tra
 .avatar .name { font-weight: 900; color: white; font-size: 1rem; }
 .avatar .cards { background: linear-gradient(135deg, #ff5555, var(--accent-red)); color: white; border-radius: 20px; font-weight: 900; font-size: 0.9rem; padding: 4px 10px; }
 
-.player-status { position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); font-size: 0.8rem; padding: 2px 8px; border-radius: 10px; font-weight: bold; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.8); animation: popIn 0.2s ease; z-index: 80; }
+.player-status { position: absolute; bottom: -15px; left: 50%; transform: translateX(-50%); font-size: 0.85rem; padding: 3px 10px; border-radius: 12px; font-weight: 900; white-space: nowrap; box-shadow: 0 3px 8px rgba(0,0,0,0.9); animation: popIn 0.2s ease; z-index: 80; }
 .status-pass { background: #666; color: white; }
-.status-play { background: var(--gold-primary); color: black; }
+.status-play { background: var(--gold-primary); color: #3b2a00; border: 1px solid #b8860b; }
 .status-bluff { background: var(--accent-red); color: white; }
 .status-caught { background: #550000; color: white; border: 1px solid #ff4444; }
 
-/* --- منطقة اليد والتحكم بالتصميم الجديد --- */
-.hand-container { 
-    height: 40vh; /* أعطينا مساحة كافية للورق */
-    width: 100%; 
-    background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.4)); 
-    border-top: 4px solid var(--wood-light); 
-    display: flex; 
-    flex-direction: column; 
-    z-index: 100; 
-    box-shadow: 0 -10px 30px rgba(0,0,0,0.8); 
-    position: relative;
-}
+/* شارة أوراقي */
+.my-card-count { position: absolute; top: -18px; right: 20px; background: linear-gradient(135deg, var(--accent-red), #b30000); color: white; padding: 5px 15px; border-radius: 15px; font-weight: 900; font-size: 1.1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.6); border: 2px solid #ff9999; z-index: 150; }
 
-/* السكرول الطولي وتغليف البطاقات الريسبونسيف */
-.hand { 
-    display: flex; 
-    flex-wrap: wrap; /* السماح بنزول البطاقات لسطر جديد */
-    overflow-y: auto; /* سكرول عمودي */
-    overflow-x: hidden; 
-    justify-content: center; 
-    align-content: flex-start;
-    /* مساحة سفلية كبيرة جداً (90px) لضمان عدم اختفاء البطاقات خلف الأزرار الثابتة */
-    padding: 30px 20px 90px 20px; 
-    gap: 15px 0; 
-    width: 100%; /* ياخذ العرض كامل ريسبونسف */
-    margin: 0 auto; 
-}
+.hand-container { height: 35vh; width: 100%; background: linear-gradient(to top, rgba(0,0,0,0.95), rgba(0,0,0,0.4)); border-top: 4px solid var(--wood-light); display: flex; flex-direction: column; z-index: 100; box-shadow: 0 -10px 30px rgba(0,0,0,0.8); padding-bottom: 5px; position: relative; }
+.hand { display: flex; flex-wrap: wrap; overflow-y: auto; overflow-x: hidden; justify-content: center; align-content: flex-start; padding: 30px 20px 90px 20px; gap: 15px 0; flex: 1; max-width: 700px; margin: 0 auto; width: 100%; }
 
-/* شريط التمرير الطولي الذهبي */
 .hand::-webkit-scrollbar { width: 8px; }
 .hand::-webkit-scrollbar-track { background: rgba(0,0,0,0.4); border-radius: 10px; margin: 10px 0; }
 .hand::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #b8860b, var(--gold-primary), #b8860b); border-radius: 10px; border: 1px solid #fff; }
 
-.card { 
-    width: 65px; 
-    height: 95px; 
-    background: linear-gradient(135deg, #fff, #e0e0e0); 
-    border-radius: 8px; 
-    color: #111; 
-    transition: margin 0.2s ease, transform 0.2s ease, box-shadow 0.2s; 
-    border: 1px solid #999; 
-    display: flex; 
-    flex-direction: column; 
-    justify-content: space-between; 
-    padding: 6px; 
-    font-weight: 900; 
-    cursor: pointer; 
-    font-size: 1.4rem; 
-    font-family: Arial; 
-    flex-shrink: 0; 
-    margin-right: -25px; /* تداخل البطاقات */
-    box-shadow: -4px 4px 10px rgba(0,0,0,0.5); 
-    position: relative; 
-}
+.card { width: 65px; height: 95px; background: linear-gradient(135deg, #fff, #e0e0e0); border-radius: 8px; color: #111; transition: margin 0.2s ease, transform 0.2s ease, box-shadow 0.2s; border: 1px solid #999; display: flex; flex-direction: column; justify-content: space-between; padding: 6px; font-weight: 900; cursor: pointer; font-size: 1.4rem; font-family: Arial; flex-shrink: 0; margin-right: -25px; box-shadow: -4px 4px 10px rgba(0,0,0,0.5); position: relative; }
 .card:first-child { margin-right: 0; }
+.card:hover, .card.selected { margin-left: 20px; transform: translateY(-20px) scale(1.1); z-index: 50; box-shadow: -8px 15px 25px rgba(0,0,0,0.7); }
+.card.selected { border: 2px solid var(--gold-primary); background: #fffacd; color: #8b6508; box-shadow: 0 15px 30px rgba(0,0,0,0.8), 0 0 25px var(--gold-glow); z-index: 60; }
 
-/* تأثير التباعد عند التأشير */
-.card:hover, .card.selected { 
-    margin-left: 20px; 
-    transform: translateY(-20px) scale(1.1); 
-    z-index: 50; 
-    box-shadow: -8px 15px 25px rgba(0,0,0,0.7); 
-}
-.card.selected { 
-    border: 2px solid var(--gold-primary); 
-    background: #fffacd; 
-    color: #8b6508; 
-    box-shadow: 0 15px 30px rgba(0,0,0,0.8), 0 0 25px var(--gold-glow); 
-    z-index: 60; 
-}
-
-/* --- الأزرار الثابتة (لا تتأثر بالزوم) --- */
-.controls { 
-    position: fixed; /* ثابتة أسفل الشاشة */
-    bottom: 0; 
-    left: 0; 
-    width: 100%; 
-    padding: 12px 15px; 
-    background: rgba(5, 10, 14, 0.95); 
-    backdrop-filter: blur(10px);
-    display: flex; 
-    justify-content: center; 
-    gap: 15px; 
-    flex-wrap: wrap; 
-    border-top: 2px solid var(--gold-primary); 
-    z-index: 1000; /* دائمًا فوق كل شيء */
-    box-shadow: 0 -5px 25px rgba(0,0,0,0.9);
-}
+.controls { position: fixed; bottom: 0; left: 0; width: 100%; padding: 12px 15px; background: rgba(5, 10, 14, 0.95); backdrop-filter: blur(10px); display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; border-top: 2px solid var(--gold-primary); z-index: 1000; box-shadow: 0 -5px 25px rgba(0,0,0,0.9); }
 
 .action-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 5000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
 .action-text { font-size: 4rem; font-weight: 900; color: white; text-align: center; text-shadow: 0 10px 30px rgba(0,0,0,0.9); transform: scale(0.1); opacity: 0; line-height: 1.2; animation: smashIn 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
@@ -170,4 +98,5 @@ button:disabled { filter: grayscale(100%) opacity(0.4); cursor: not-allowed; tra
     .claim-hologram { font-size: 1.2rem; padding: 5px 20px; }
     .action-text { font-size: 3rem; }
     .claim-btn { font-size: 1.4rem; padding: 8px 0; }
+    .my-card-count { font-size: 1rem; padding: 4px 12px; }
 }
