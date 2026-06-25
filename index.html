@@ -3,11 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>كذاب Pro - v15</title>
+    <title>كذاب Pro - v15.1</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-    <link rel="stylesheet" href="style.css?v=15.0">
+    <link rel="stylesheet" href="style.css?v=15.1">
 </head>
 <body>
+
+    <button id="btn-mic" class="btn-gray" onclick="toggleMic()" style="position: fixed; top: 15px; left: 15px; z-index: 5000; font-size: 1rem; padding: 8px 15px; border-radius: 20px; border: 2px solid #555; box-shadow: 0 4px 10px rgba(0,0,0,0.8);">
+        🔇 المايك مقفل
+    </button>
 
     <div id="action-overlay" class="action-overlay" style="display:none;">
         <h1 id="action-text" class="action-text"></h1>
@@ -41,7 +45,7 @@
     <div id="lobby" class="overlay">
         <div class="setup-box" id="initial-setup">
             <h1 style="color: var(--gold-primary); margin-bottom: 5px;">كذاب Pro 👑</h1>
-            <p style="color:#aaa; font-size: 0.9rem; margin-top: 0;">v15.0 (تحديث الكومة والأرقام)</p>
+            <p style="color:#aaa; font-size: 0.9rem; margin-top: 0;">v15.1 (الفويس تشات)</p>
             <input type="text" id="player-name" placeholder="اكتب اسمك هنا" maxlength="12">
             <button class="btn-gold" style="width: 100%; margin-bottom: 10px;" onclick="startHost()">إنشاء طاولة (Host)</button>
             <div style="display:flex; gap:10px; width: 100%;">
@@ -88,6 +92,6 @@
         </div>
     </div>
 
-    <script src="script.js?v=15.0"></script>
+    <script src="script.js?v=15.1"></script>
 </body>
 </html>

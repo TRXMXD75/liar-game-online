@@ -54,10 +54,79 @@ function generateShortCode() {
 
 let myToken; try { myToken = sessionStorage.getItem('kaddab_token'); if(!myToken) { myToken = Math.random().toString(36).substr(2); sessionStorage.setItem('kaddab_token', myToken); } } catch(e) { myToken = Math.random().toString(36).substr(2); }
 
-// تمت إضافة roundPotCount لتتبع الجولة الحالية
 let peer, conn, connections = [];
 let gameState = { players: [], currentPlayer: 0, pot: [], currentClaim: "", lastPlayer: -1, lastPlayCount: 0, actionLog: "", winner: null, bluffEventId: 0, gameStarted: false, roundPotCount: 0 };
 let hostHandBackup = {}; let isHost = false, myHand = [], selected = [], myIndex = 0, myName = ""; let processedBluffIds = []; let lobbyPlayers = [];
+
+// --- نظام المحادثة الصوتية ---
+let localStream = null;
+let isMicOn = false;
+let activeCalls = {};
+
+async function toggleMic() {
+    const micBtn = document.getElementById('btn-mic');
+    if (isMicOn) {
+        if (localStream) {
+            localStream.getTracks().forEach(track => track.stop());
+            localStream = null;
+        }
+        isMicOn = false;
+        micBtn.innerText = '🔇 المايك مقفل';
+        micBtn.className = 'btn-gray';
+        micBtn.style.borderColor = '#555';
+    } else {
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            isMicOn = true;
+            micBtn.innerText = '🎤 المايك شغال';
+            micBtn.className = 'btn-gold';
+            micBtn.style.borderColor = 'var(--gold-primary)';
+
+            peer.on('call', call => {
+                call.answer(localStream);
+                handleCallStream(call);
+            });
+
+            connectAudioToAll();
+        } catch (e) {
+            showModal("خطأ ❌", "لم نتمكن من الوصول للمايك. تأكد من إعطاء الصلاحية للمتصفح!", "error");
+        }
+    }
+}
+
+function handleCallStream(call) {
+    call.on('stream', remoteStream => {
+        if (!document.getElementById('audio-' + call.peer)) {
+            let aud = document.createElement('audio');
+            aud.id = 'audio-' + call.peer;
+            aud.srcObject = remoteStream;
+            aud.autoplay = true;
+            document.body.appendChild(aud);
+        }
+    });
+
+    call.on('close', () => {
+        let aud = document.getElementById('audio-' + call.peer);
+        if (aud) aud.remove();
+        delete activeCalls[call.peer];
+    });
+
+    activeCalls[call.peer] = call;
+}
+
+function connectAudioToAll() {
+    if (!isMicOn || !localStream || !peer) return;
+    
+    lobbyPlayers.forEach(p => {
+        if (p.peerId && p.peerId !== peer.id && !activeCalls[p.peerId]) {
+            if (peer.id > p.peerId) { 
+                let call = peer.call(p.peerId, localStream);
+                if (call) handleCallStream(call);
+            }
+        }
+    });
+}
+// ------------------------------
 
 function getPlayerName() { return document.getElementById('player-name').value.trim() || `لاعب ${Math.floor(Math.random() * 100)}`; }
 
@@ -82,8 +151,9 @@ function kickPlayer(token) {
 function broadcastLobby() {
     if(isHost) {
         connections = connections.filter(c => c.open);
-        lobbyPlayers = [{name: myName, token: myToken}, ...connections.map(c => ({name: c.playerName, token: c.playerToken}))];
+        lobbyPlayers = [{name: myName, token: myToken, peerId: peer.id}, ...connections.map(c => ({name: c.playerName, token: c.playerToken, peerId: c.peerId}))];
         updateLobbyUI(); connections.forEach(c => { try { c.send({ type: 'LOBBY_UPDATE', players: lobbyPlayers }); } catch(e){} });
+        if (typeof connectAudioToAll === 'function') connectAudioToAll();
     }
 }
 
@@ -94,12 +164,12 @@ function setupConn(c) {
         if(data.type === 'HELLO_HOST') {
             if(gameState.gameStarted) {
                 let existing = gameState.players.find(p => p.token === data.token);
-                if(existing) { c.playerName = data.name; c.playerToken = data.token; connections.push(c); c.send({ type: 'RECONNECT', hand: hostHandBackup[data.token], state: gameState, yourIndex: existing.index }); } 
+                if(existing) { c.playerName = data.name; c.playerToken = data.token; c.peerId = data.peerId; connections.push(c); c.send({ type: 'RECONNECT', hand: hostHandBackup[data.token], state: gameState, yourIndex: existing.index }); } 
                 else c.send({ type: 'REJECTED' });
-            } else { c.playerName = data.name; c.playerToken = data.token; connections.push(c); c.send({ type: 'HELLO_CLIENT' }); broadcastLobby(); }
+            } else { c.playerName = data.name; c.playerToken = data.token; c.peerId = data.peerId; connections.push(c); c.send({ type: 'HELLO_CLIENT' }); broadcastLobby(); }
         }
         else if (data.type === 'HELLO_CLIENT') document.getElementById('initial-setup').innerHTML = `<h2 style='color:var(--success-green)'>تم الاتصال! ✅</h2><p>انتظر المضيف يبدأ...</p>`;
-        else if (data.type === 'LOBBY_UPDATE') { lobbyPlayers = data.players; updateLobbyUI(); }
+        else if (data.type === 'LOBBY_UPDATE') { lobbyPlayers = data.players; updateLobbyUI(); if (typeof connectAudioToAll === 'function') connectAudioToAll(); }
         else if (data.type === 'REJECTED') { showModal("مغلقة 🔒", "اللعبة بدأت بالفعل وما تقدر تدخل الحين", "error"); if(peer) peer.destroy(); }
         else if (data.type === 'KICKED') { showModal("مطرود 👢", "تم طردك من الغرفة.", "error"); setTimeout(()=>location.reload(), 2000); }
         else if (data.type === 'START' || data.type === 'RECONNECT') {
@@ -123,14 +193,22 @@ function setupConn(c) {
 }
 
 function startHost() { 
-    initAudio(); myName = getPlayerName(); isHost = true; lobbyPlayers = [{name: myName, token: myToken}]; updateLobbyUI(); 
+    initAudio(); myName = getPlayerName(); isHost = true; 
     document.getElementById('initial-setup').style.display = 'none'; document.getElementById('waiting-area').style.display = 'block'; document.getElementById('start-game-btn').style.display = 'block'; 
-    const shortId = generateShortCode(); peer = new Peer(shortId); peer.on('open', id => { document.getElementById('room-code').innerText = id; }); peer.on('connection', c => setupConn(c)); 
+    const shortId = generateShortCode(); peer = new Peer(shortId); peer.on('open', id => { 
+        document.getElementById('room-code').innerText = id; 
+        lobbyPlayers = [{name: myName, token: myToken, peerId: id}]; updateLobbyUI(); 
+    }); 
+    peer.on('connection', c => setupConn(c)); 
 }
 function joinRoom() { 
     initAudio(); myName = getPlayerName(); const hostId = document.getElementById('join-id').value.trim().toUpperCase(); 
     if(!hostId) return showModal("تنبيه", "أدخل الكود!", "error"); document.getElementById('initial-setup').innerHTML = "<h2>جاري البحث... ⏳</h2>"; 
-    peer = new Peer(); peer.on('open', id => { conn = peer.connect(hostId); setupConn(conn); conn.on('open', () => conn.send({ type: 'HELLO_HOST', name: myName, token: myToken })); }); peer.on('error', () => { showModal("خطأ", "الكود خطأ!", "error"); setTimeout(()=>location.reload(), 2000); }); 
+    peer = new Peer(); peer.on('open', id => { 
+        conn = peer.connect(hostId); setupConn(conn); 
+        conn.on('open', () => conn.send({ type: 'HELLO_HOST', name: myName, token: myToken, peerId: id })); 
+    }); 
+    peer.on('error', () => { showModal("خطأ", "الكود خطأ!", "error"); setTimeout(()=>location.reload(), 2000); }); 
 }
 
 function broadcastStart() {
@@ -267,7 +345,6 @@ function render() {
     bluffBtn.disabled = (gameState.pot.length === 0 || gameState.lastPlayer === -1 || gameState.lastPlayer === myIndex);
     passBtn.disabled = (gameState.pot.length === 0 || gameState.lastPlayer === -1); 
 
-    // تفصيل الكومة
     let basePot = gameState.pot.length - gameState.roundPotCount;
     if (gameState.currentClaim && gameState.roundPotCount > 0) {
         if (basePot > 0) {
